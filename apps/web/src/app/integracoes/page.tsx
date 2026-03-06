@@ -254,6 +254,7 @@ export default function IntegracoesPage(): JSX.Element {
   });
 
   const callbackUrl = useMemo(() => `${apiBaseUrl()}/integrations/meta/webhook`, []);
+  const currentApiBase = useMemo(() => apiBaseUrl(), []);
 
   const toggleReveal = (key: SensitiveKey): void => {
     setRevealed((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -434,6 +435,11 @@ export default function IntegracoesPage(): JSX.Element {
         actions={["Atualizar inbox"]}
       />
 
+      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-200">
+        <p>{status}</p>
+        <p className="mt-1 text-xs text-slate-400">API base ativa: {currentApiBase}</p>
+      </div>
+
       <section className="grid gap-4 2xl:grid-cols-12">
         <article className="section-card 2xl:col-span-5">
           <h3 className="text-xl font-bold">Estado dos conectores</h3>
@@ -548,8 +554,6 @@ export default function IntegracoesPage(): JSX.Element {
           </div>
         </article>
       </section>
-
-      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
 
       <DataOpsPanel
         scopeLabel="Mapeamento de integracoes e eventos"
