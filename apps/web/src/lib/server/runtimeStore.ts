@@ -49,6 +49,8 @@ export type Contact = {
   readonly phoneNumber: string;
   readonly firstName: string;
   readonly lastName?: string;
+  readonly contextIdentifier?: string;
+  readonly contextQuestion?: string;
   readonly whatsappProfileName?: string;
   readonly tags: readonly string[];
   readonly source: string;
@@ -251,6 +253,22 @@ function normalizePhone(raw: string): string {
   return withPlus;
 }
 
+function isE164(value: string): boolean {
+  return /^\+[1-9]\d{7,14}$/.test(value);
+}
+
+function normalizeContextIdentifier(raw: string): string {
+  const cleaned = raw
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_\-:.]/g, "");
+  if (!cleaned) {
+    throw new Error("Identificador de contexto invalido.");
+  }
+  return cleaned.slice(0, 80);
+}
+
 function nextId(prefix: string, counter: keyof RuntimeStore["counters"]): string {
   const store = getStore();
   store.counters[counter] += 1;
@@ -289,38 +307,72 @@ export function findContactByPhone(context: RequestContext, phoneNumber: string)
 export function createContact(
   context: RequestContext,
   payload: {
-    readonly phoneNumber: string;
-    readonly firstName: string;
+    readonly phoneNumber?: string;
+    readonly firstName?: string;
     readonly source: string;
     readonly tags?: readonly string[];
+    readonly contextIdentifier?: string;
+    readonly contextQuestion?: string;
     readonly lastName?: string;
     readonly whatsappProfileName?: string;
   },
 ): Contact {
-  const firstName = payload.firstName.trim();
-  if (!firstName) {
-    throw new Error("Nome obrigatorio.");
-  }
+  const firstName = payload.firstName?.trim() || "Sem nome";
 
   const source = payload.source.trim();
   if (!source) {
     throw new Error("Source obrigatoria.");
   }
 
+  const hasPhone = Boolean(payload.phoneNumber?.trim());
+  const hasContext = Boolean(payload.contextIdentifier?.trim());
+  if (!hasPhone && !hasContext) {
+    throw new Error("Informe telefone E.164 ou identificador de contexto.");
+  }
+
+  const normalizedContext = hasContext ? normalizeContextIdentifier(payload.contextIdentifier ?? "") : "";
+  const normalizedPhone = hasPhone
+    ? normalizePhone(payload.phoneNumber ?? "")
+    : `ctx:${normalizedContext}`;
+
   const tags = (payload.tags ?? [])
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+  if (!hasPhone && !tags.includes("sem_telefone")) {
+    tags.push("sem_telefone");
+  }
+
+  if (!hasPhone) {
+    const store = getStore();
+    const existingByContext = store.contacts.find(
+      (item) =>
+        item.tenantId === context.tenantId &&
+        item.workspaceId === context.workspaceId &&
+        item.contextIdentifier === normalizedContext,
+    );
+    if (existingByContext) {
+      return updateContact(context, existingByContext.id, {
+        firstName,
+        ...(payload.lastName?.trim() ? { lastName: payload.lastName.trim() } : {}),
+        ...(payload.contextQuestion?.trim() ? { contextQuestion: payload.contextQuestion.trim() } : {}),
+        source,
+        tags,
+      });
+    }
+  }
 
   const item: Contact = {
     id: nextId("contact", "contact"),
     tenantId: context.tenantId,
     workspaceId: context.workspaceId,
-    phoneNumber: normalizePhone(payload.phoneNumber),
+    phoneNumber: normalizedPhone,
     firstName,
     tags,
     source,
     createdAt: nowIso(),
     doNotContact: false,
+    ...(normalizedContext ? { contextIdentifier: normalizedContext } : {}),
+    ...(payload.contextQuestion?.trim() ? { contextQuestion: payload.contextQuestion.trim() } : {}),
     ...(payload.lastName?.trim() ? { lastName: payload.lastName.trim() } : {}),
     ...(payload.whatsappProfileName?.trim() ? { whatsappProfileName: payload.whatsappProfileName.trim() } : {}),
   };
@@ -380,6 +432,8 @@ export function updateContact(
     readonly phoneNumber?: string;
     readonly firstName?: string;
     readonly lastName?: string;
+    readonly contextIdentifier?: string;
+    readonly contextQuestion?: string;
     readonly whatsappProfileName?: string;
     readonly tags?: readonly string[];
     readonly source?: string;
@@ -393,6 +447,8 @@ export function updateContact(
     ...(payload.phoneNumber ? { phoneNumber: normalizePhone(payload.phoneNumber) } : {}),
     ...(payload.firstName?.trim() ? { firstName: payload.firstName.trim() } : {}),
     ...(payload.lastName?.trim() ? { lastName: payload.lastName.trim() } : {}),
+    ...(payload.contextIdentifier?.trim() ? { contextIdentifier: normalizeContextIdentifier(payload.contextIdentifier) } : {}),
+    ...(payload.contextQuestion?.trim() ? { contextQuestion: payload.contextQuestion.trim() } : {}),
     ...(payload.whatsappProfileName?.trim() ? { whatsappProfileName: payload.whatsappProfileName.trim() } : {}),
     ...(payload.source?.trim() ? { source: payload.source.trim() } : {}),
     ...(payload.tags
@@ -845,6 +901,9 @@ export async function sendWhatsAppMessage(
   const contact = findContactOrThrow(context, payload.contactId);
   if (contact.doNotContact) {
     throw new Error("Contato com opt-out (do_not_contact=true).");
+  }
+  if (!isE164(contact.phoneNumber)) {
+    throw new Error("Contato sem telefone E.164 valido. Atualize o telefone antes de enviar WhatsApp.");
   }
 
   const text = payload.text.trim();

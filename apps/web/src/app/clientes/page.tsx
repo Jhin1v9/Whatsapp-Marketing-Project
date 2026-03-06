@@ -11,6 +11,8 @@ type Contact = {
   readonly firstName: string;
   readonly lastName?: string;
   readonly phoneNumber: string;
+  readonly contextIdentifier?: string;
+  readonly contextQuestion?: string;
   readonly source: string;
   readonly doNotContact: boolean;
   readonly tags: readonly string[];
@@ -19,6 +21,17 @@ type Contact = {
 type SortKey = "name" | "source" | "phone";
 
 const PAGE_SIZE = 8;
+
+function isContextOnlyContact(contact: Contact): boolean {
+  return contact.phoneNumber.startsWith("ctx:");
+}
+
+function contactIdentifier(contact: Contact): string {
+  if (contact.contextIdentifier?.trim()) {
+    return contact.contextIdentifier;
+  }
+  return contact.phoneNumber.replace(/^ctx:/, "");
+}
 
 export default function ClientesPage(): JSX.Element {
   const [contacts, setContacts] = useState<readonly Contact[]>([]);
@@ -56,7 +69,13 @@ export default function ClientesPage(): JSX.Element {
     const base = q
       ? contacts.filter((contact) => {
           const full = `${contact.firstName} ${contact.lastName ?? ""}`.toLowerCase();
-          return full.includes(q) || contact.phoneNumber.includes(q) || contact.source.toLowerCase().includes(q);
+          const context = `${contact.contextIdentifier ?? ""} ${contact.contextQuestion ?? ""}`.toLowerCase();
+          return (
+            full.includes(q) ||
+            contact.phoneNumber.includes(q) ||
+            context.includes(q) ||
+            contact.source.toLowerCase().includes(q)
+          );
         })
       : contacts;
 
@@ -67,7 +86,7 @@ export default function ClientesPage(): JSX.Element {
       if (sortKey === "source") {
         return a.source.localeCompare(b.source);
       }
-      return a.phoneNumber.localeCompare(b.phoneNumber);
+      return contactIdentifier(a).localeCompare(contactIdentifier(b));
     });
 
     return sorted;
@@ -117,7 +136,7 @@ export default function ClientesPage(): JSX.Element {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nome, telefone ou origem"
+            placeholder="Buscar por nome, telefone, contexto ou origem"
             className="w-full max-w-xl rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
           />
 
@@ -148,7 +167,16 @@ export default function ClientesPage(): JSX.Element {
               {paged.map((contact) => (
                 <tr key={contact.id} className="border-b border-white/5">
                   <td className="px-3 py-2 font-semibold">{contact.firstName} {contact.lastName ?? ""}</td>
-                  <td className="px-3 py-2">{contact.phoneNumber}</td>
+                  <td className="px-3 py-2">
+                    {isContextOnlyContact(contact) ? (
+                      <div className="space-y-1">
+                        <p>Sem telefone</p>
+                        <p className="text-xs text-slate-400">Contexto: {contactIdentifier(contact)}</p>
+                      </div>
+                    ) : (
+                      contact.phoneNumber
+                    )}
+                  </td>
                   <td className="px-3 py-2">{contact.source}</td>
                   <td className="px-3 py-2">{contact.tags.join(", ")}</td>
                   <td className="px-3 py-2">{contact.doNotContact ? "Sim" : "Nao"}</td>

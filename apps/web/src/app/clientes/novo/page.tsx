@@ -14,6 +14,8 @@ type FormState = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  contextIdentifier: string;
+  contextQuestion: string;
   whatsappProfileName: string;
   tagsCsv: string;
   source: string;
@@ -25,7 +27,9 @@ type FormState = {
 const INITIAL_FORM: FormState = {
   firstName: "",
   lastName: "",
-  phoneNumber: "+55",
+  phoneNumber: "",
+  contextIdentifier: "",
+  contextQuestion: "",
   whatsappProfileName: "",
   tagsCsv: "",
   source: "website",
@@ -44,6 +48,13 @@ export default function AddClientPage(): JSX.Element {
   };
 
   const submit = async (): Promise<void> => {
+    const hasPhone = form.phoneNumber.trim().length > 0;
+    const hasContext = form.contextIdentifier.trim().length > 0;
+    if (!hasPhone && !hasContext) {
+      setStatus("Informe telefone E.164 ou identificador de contexto para salvar.");
+      return;
+    }
+
     setLoading(true);
     setStatus("Salvando cliente...");
 
@@ -57,8 +68,10 @@ export default function AddClientPage(): JSX.Element {
         method: "POST",
         headers,
         body: JSON.stringify({
-          phoneNumber: form.phoneNumber,
-          firstName: form.firstName,
+          ...(form.phoneNumber.trim() ? { phoneNumber: form.phoneNumber } : {}),
+          ...(form.firstName.trim() ? { firstName: form.firstName } : {}),
+          ...(form.contextIdentifier.trim() ? { contextIdentifier: form.contextIdentifier.trim() } : {}),
+          ...(form.contextQuestion.trim() ? { contextQuestion: form.contextQuestion.trim() } : {}),
           ...(form.lastName.trim() ? { lastName: form.lastName.trim() } : {}),
           ...(form.whatsappProfileName.trim() ? { whatsappProfileName: form.whatsappProfileName.trim() } : {}),
           tags: form.tagsCsv
@@ -121,9 +134,11 @@ export default function AddClientPage(): JSX.Element {
 
       <section className="section-card">
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-1 text-sm"><span>Nome *</span><input value={form.firstName} onChange={(event) => update("firstName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
+          <label className="space-y-1 text-sm"><span>Nome (pode atualizar depois)</span><input value={form.firstName} onChange={(event) => update("firstName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Sobrenome</span><input value={form.lastName} onChange={(event) => update("lastName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
-          <label className="space-y-1 text-sm"><span>Telefone E.164 *</span><input value={form.phoneNumber} onChange={(event) => update("phoneNumber", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
+          <label className="space-y-1 text-sm"><span>Telefone E.164 (opcional)</span><input value={form.phoneNumber} onChange={(event) => update("phoneNumber", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="+5511999999999" /></label>
+          <label className="space-y-1 text-sm"><span>Identificador de contexto (se sem telefone)</span><input value={form.contextIdentifier} onChange={(event) => update("contextIdentifier", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="ex.: lead_instagram_caixa_12" /></label>
+          <label className="space-y-1 text-sm md:col-span-2"><span>Pergunta/contexto para identificar depois</span><input value={form.contextQuestion} onChange={(event) => update("contextQuestion", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="Ex.: Cliente perguntou sobre sofa 6 lugares no direct" /></label>
           <label className="space-y-1 text-sm"><span>WhatsApp profile name</span><input value={form.whatsappProfileName} onChange={(event) => update("whatsappProfileName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Tags (csv)</span><input value={form.tagsCsv} onChange={(event) => update("tagsCsv", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Source *</span><input value={form.source} onChange={(event) => update("source", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>

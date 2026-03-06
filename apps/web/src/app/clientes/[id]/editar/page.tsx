@@ -13,11 +13,17 @@ type ContactDetails = {
     readonly firstName: string;
     readonly lastName?: string;
     readonly phoneNumber: string;
+    readonly contextIdentifier?: string;
+    readonly contextQuestion?: string;
     readonly whatsappProfileName?: string;
     readonly tags: readonly string[];
     readonly source: string;
   };
 };
+
+function isE164(value: string): boolean {
+  return /^\+[1-9]\d{7,14}$/.test(value.trim());
+}
 
 export default function EditClientePage(): JSX.Element {
   const params = useParams<{ id: string }>();
@@ -25,7 +31,9 @@ export default function EditClientePage(): JSX.Element {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("+55");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [contextIdentifier, setContextIdentifier] = useState("");
+  const [contextQuestion, setContextQuestion] = useState("");
   const [whatsappProfileName, setWhatsappProfileName] = useState("");
   const [source, setSource] = useState("manual");
   const [tagsCsv, setTagsCsv] = useState("");
@@ -44,7 +52,9 @@ export default function EditClientePage(): JSX.Element {
       const data = (await response.json()) as ContactDetails;
       setFirstName(data.contact.firstName);
       setLastName(data.contact.lastName ?? "");
-      setPhoneNumber(data.contact.phoneNumber);
+      setPhoneNumber(isE164(data.contact.phoneNumber) ? data.contact.phoneNumber : "");
+      setContextIdentifier(data.contact.contextIdentifier ?? data.contact.phoneNumber.replace(/^ctx:/, ""));
+      setContextQuestion(data.contact.contextQuestion ?? "");
       setWhatsappProfileName(data.contact.whatsappProfileName ?? "");
       setSource(data.contact.source);
       setTagsCsv(data.contact.tags.join(","));
@@ -65,7 +75,9 @@ export default function EditClientePage(): JSX.Element {
       body: JSON.stringify({
         firstName,
         ...(lastName.trim() ? { lastName } : {}),
-        phoneNumber,
+        ...(phoneNumber.trim() ? { phoneNumber } : {}),
+        ...(contextIdentifier.trim() ? { contextIdentifier: contextIdentifier.trim() } : {}),
+        ...(contextQuestion.trim() ? { contextQuestion: contextQuestion.trim() } : {}),
         ...(whatsappProfileName.trim() ? { whatsappProfileName } : {}),
         source,
         tags: tagsCsv.split(",").map((item) => item.trim()).filter((item) => item.length > 0),
@@ -93,7 +105,9 @@ export default function EditClientePage(): JSX.Element {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1 text-sm"><span>Nome</span><input value={firstName} onChange={(event) => setFirstName(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Sobrenome</span><input value={lastName} onChange={(event) => setLastName(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
-          <label className="space-y-1 text-sm"><span>Telefone</span><input value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
+          <label className="space-y-1 text-sm"><span>Telefone E.164 (opcional)</span><input value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="+5511999999999" className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
+          <label className="space-y-1 text-sm"><span>Identificador de contexto</span><input value={contextIdentifier} onChange={(event) => setContextIdentifier(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
+          <label className="space-y-1 text-sm md:col-span-2"><span>Pergunta/contexto</span><input value={contextQuestion} onChange={(event) => setContextQuestion(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Perfil WhatsApp</span><input value={whatsappProfileName} onChange={(event) => setWhatsappProfileName(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Origem</span><input value={source} onChange={(event) => setSource(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Tags csv</span><input value={tagsCsv} onChange={(event) => setTagsCsv(event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>

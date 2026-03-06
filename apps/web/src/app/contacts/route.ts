@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { contextFromHeaders, createContact, listContacts } from "../../lib/server/runtimeStore";
 
 type CreateContactPayload = {
-  readonly phoneNumber: string;
-  readonly firstName: string;
+  readonly phoneNumber?: string;
+  readonly firstName?: string;
   readonly source: string;
   readonly tags?: readonly string[];
+  readonly contextIdentifier?: string;
+  readonly contextQuestion?: string;
   readonly lastName?: string;
   readonly whatsappProfileName?: string;
 };

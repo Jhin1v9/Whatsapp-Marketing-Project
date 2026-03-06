@@ -7,6 +7,8 @@ type UpdateContactPayload = {
   readonly source?: string;
   readonly tags?: readonly string[];
   readonly lastName?: string;
+  readonly contextIdentifier?: string;
+  readonly contextQuestion?: string;
   readonly whatsappProfileName?: string;
 };
 
