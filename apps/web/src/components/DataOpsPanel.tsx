@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
-import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv } from "../lib/quickActions";
+import { useActionEngine } from "../hooks/useActionEngine";
 
 type DataOpsPanelProps = {
   readonly scopeLabel: string;
@@ -12,52 +11,7 @@ type DataOpsPanelProps = {
 };
 
 export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: DataOpsPanelProps): JSX.Element {
-  const csvInputRef = useRef<HTMLInputElement | null>(null);
-  const xlsxInputRef = useRef<HTMLInputElement | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("");
-
-  const importCsv = async (file: File): Promise<void> => {
-    setBusy(true);
-    setStatus(`Importando ${file.name}...`);
-
-    try {
-      const result = await importContactsFromCsv(file);
-      setStatus(`Importacao finalizada: ${result.created} criados, ${result.failed} com erro.`);
-    } catch (error) {
-      setStatus(`Falha na importacao CSV: ${String(error)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const exportCsv = async (): Promise<void> => {
-    setBusy(true);
-    setStatus("Gerando CSV de contatos...");
-
-    try {
-      const count = await exportContactsCsv();
-      setStatus(`Exportacao CSV concluida com ${count} contatos.`);
-    } catch (error) {
-      setStatus(`Falha na exportacao CSV: ${String(error)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const exportJson = async (): Promise<void> => {
-    setBusy(true);
-    setStatus("Gerando snapshot JSON...");
-
-    try {
-      const snapshot = await exportOperationalSnapshot();
-      setStatus(`Snapshot JSON pronto (${snapshot.contacts} contatos, ${snapshot.campaigns} campanhas, ${snapshot.messages} mensagens).`);
-    } catch (error) {
-      setStatus(`Falha na exportacao JSON: ${String(error)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const engine = useActionEngine();
 
   return (
     <section className="section-card">
@@ -68,29 +22,29 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => csvInputRef.current?.click()}
-            disabled={busy}
+            onClick={() => void engine.runAction("Importar CSV")}
+            disabled={engine.busy}
             className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
             Importar CSV
           </button>
           <button
-            onClick={() => xlsxInputRef.current?.click()}
-            disabled={busy}
+            onClick={() => void engine.runAction("Importar XLSX")}
+            disabled={engine.busy}
             className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             Importar XLSX
           </button>
           <button
-            onClick={() => void exportCsv()}
-            disabled={busy}
+            onClick={() => void engine.runAction("Exportar CSV")}
+            disabled={engine.busy}
             className="rounded-lg border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Exportar CSV
           </button>
           <button
-            onClick={() => void exportJson()}
-            disabled={busy}
+            onClick={() => void engine.runAction("Exportar JSON")}
+            disabled={engine.busy}
             className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           >
             Exportar JSON
@@ -98,33 +52,8 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
         </div>
       </div>
 
-      <input
-        ref={csvInputRef}
-        type="file"
-        accept=".csv"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) {
-            void importCsv(file);
-          }
-          event.target.value = "";
-        }}
-      />
-
-      <input
-        ref={xlsxInputRef}
-        type="file"
-        accept=".xlsx"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) {
-            setStatus(`Arquivo ${file.name} recebido. Conversao XLSX sera tratada no backend dedicado; use CSV por enquanto.`);
-          }
-          event.target.value = "";
-        }}
-      />
+      <input ref={engine.csvInputRef} onChange={(event) => void engine.onCsvInputChange(event)} type="file" accept=".csv" className="hidden" />
+      <input ref={engine.xlsxInputRef} onChange={(event) => void engine.onXlsxInputChange(event)} type="file" accept=".xlsx" className="hidden" />
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
@@ -137,7 +66,7 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
         </div>
       </div>
 
-      {status ? <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div> : null}
+      {engine.status ? <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{engine.status}</div> : null}
       {children ? <div className="mt-3">{children}</div> : null}
     </section>
   );

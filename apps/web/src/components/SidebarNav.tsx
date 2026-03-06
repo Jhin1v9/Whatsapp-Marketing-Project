@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useActionEngine } from "../hooks/useActionEngine";
 import { navSections } from "../lib/navigation";
 
 export function SidebarNav(): JSX.Element {
   const pathname = usePathname();
+  const engine = useActionEngine();
 
   return (
     <aside className="sidebar">
@@ -16,11 +18,14 @@ export function SidebarNav(): JSX.Element {
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
-        <Link href="/clientes/novo" className="quick-action">➕ Novo lead</Link>
-        <Link href="/clientes" className="quick-action">📤 Importar</Link>
-        <Link href="/relatorios" className="quick-action">🧾 Relatorio</Link>
-        <Link href="/base-conhecimento" className="quick-action">🛠️ Suporte</Link>
+        <button onClick={() => void engine.runAction("Novo lead")} disabled={engine.busy} className="quick-action">➕ Novo lead</button>
+        <button onClick={() => void engine.runAction("Importar CSV")} disabled={engine.busy} className="quick-action">📤 Importar</button>
+        <button onClick={() => void engine.runAction("Relatorio")} disabled={engine.busy} className="quick-action">🧾 Relatorio</button>
+        <button onClick={() => void engine.runAction("Suporte")} disabled={engine.busy} className="quick-action">🛠️ Suporte</button>
       </div>
+
+      <input ref={engine.csvInputRef} onChange={(event) => void engine.onCsvInputChange(event)} type="file" accept=".csv" className="hidden" />
+      <input ref={engine.xlsxInputRef} onChange={(event) => void engine.onXlsxInputChange(event)} type="file" accept=".xlsx" className="hidden" />
 
       <nav className="space-y-4">
         {navSections.map((section) => (
@@ -49,6 +54,8 @@ export function SidebarNav(): JSX.Element {
           </div>
         ))}
       </nav>
+
+      {engine.status ? <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-2 text-xs text-slate-300">{engine.status}</div> : null}
 
       <div className="mt-6 rounded-2xl border border-warning/40 bg-warning/10 p-3 text-xs text-warning">
         IA envia apenas com aprovacao humana.
