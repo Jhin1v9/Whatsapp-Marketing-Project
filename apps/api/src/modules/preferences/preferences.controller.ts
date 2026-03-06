@@ -15,23 +15,23 @@ export class PreferencesController {
 
   @Get(":key")
   @Roles("OWNER", "ADMIN", "AGENT", "MARKETING_MANAGER", "ANALYST")
-  getPreference(@CurrentContext() context: RequestContext, @Param("key") key: string) {
+  async getPreference(@CurrentContext() context: RequestContext, @Param("key") key: string) {
     return {
       key,
-      value: this.preferencesService.get(context, key),
+      value: await this.preferencesService.get(context, key),
     };
   }
 
   @Put(":key")
   @Roles("OWNER", "ADMIN", "AGENT", "MARKETING_MANAGER", "ANALYST")
-  setPreference(
+  async setPreference(
     @CurrentContext() context: RequestContext,
     @Param("key") key: string,
     @Body() payload: SetPreferenceBody,
   ) {
     return {
       key,
-      value: this.preferencesService.set(context, key, payload.value),
+      value: await this.preferencesService.set(context, key, payload.value),
     };
   }
 }

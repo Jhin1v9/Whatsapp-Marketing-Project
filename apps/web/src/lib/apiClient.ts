@@ -114,8 +114,12 @@ export async function getUserPreference(key: string): Promise<JsonValue | null> 
     headers: defaultAppHeaders(),
   });
 
-  if (!response.ok) {
+  if (response.status === 404) {
     return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Falha ao buscar preferencia ${key}: HTTP ${response.status}`);
   }
 
   const payload = (await response.json()) as { readonly value: JsonValue | null };
@@ -123,7 +127,7 @@ export async function getUserPreference(key: string): Promise<JsonValue | null> 
 }
 
 export async function setUserPreference(key: string, value: JsonValue): Promise<void> {
-  await fetch(`${apiBaseUrl()}/me/preferences/${key}`, {
+  const response = await fetch(`${apiBaseUrl()}/me/preferences/${key}`, {
     method: "PUT",
     headers: {
       ...defaultAppHeaders(),
@@ -131,4 +135,9 @@ export async function setUserPreference(key: string, value: JsonValue): Promise<
     },
     body: JSON.stringify({ value }),
   });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Falha ao salvar preferencia ${key}: HTTP ${response.status} ${detail}`);
+  }
 }

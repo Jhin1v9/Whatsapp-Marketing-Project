@@ -58,6 +58,7 @@ type SecretFieldProps = {
   readonly value: string;
   readonly placeholder: string;
   readonly revealed: boolean;
+  readonly disabled?: boolean;
   readonly onToggle: () => void;
   readonly onChange: (value: string) => void;
   readonly className?: string;
@@ -83,7 +84,7 @@ const STRIPE_PREF_KEY = "integration_stripe_config";
 const GOOGLE_REVIEWS_PREF_KEY = "integration_google_reviews_config";
 const GOOGLE_FORMS_PREF_KEY = "integration_google_forms_config";
 const HEALTH_PREF_KEY = "integration_health_state";
-const LOCAL_PREF_PREFIX = "integration_local_";
+const INTEGRATIONS_EDIT_PASSWORD = process.env.NEXT_PUBLIC_INTEGRATIONS_EDIT_PASSWORD?.trim() || "7741";
 
 const EMPTY_META: MetaConfig = {
   appId: "",
@@ -131,31 +132,6 @@ function readStringObject<T extends Record<string, string>>(value: JsonValue | n
   }
 
   return out;
-}
-
-function readLocalPreference(key: string): JsonValue | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const raw = localStorage.getItem(`${LOCAL_PREF_PREFIX}${key}`);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(raw) as JsonValue;
-  } catch {
-    return null;
-  }
-}
-
-function writeLocalPreference(key: string, value: JsonValue): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  localStorage.setItem(`${LOCAL_PREF_PREFIX}${key}`, JSON.stringify(value));
 }
 
 function parseHealthMap(value: JsonValue | null): Record<ProviderKey, ConnectorHealth> {
@@ -226,7 +202,7 @@ function healthMapToJsonValue(map: Record<ProviderKey, ConnectorHealth>): JsonVa
   };
 }
 
-function SecretField({ value, placeholder, revealed, onToggle, onChange, className }: SecretFieldProps): JSX.Element {
+function SecretField({ value, placeholder, revealed, disabled, onToggle, onChange, className }: SecretFieldProps): JSX.Element {
   return (
     <div className={`flex items-center gap-2 ${className ?? ""}`}>
       <input
@@ -235,12 +211,14 @@ function SecretField({ value, placeholder, revealed, onToggle, onChange, classNa
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         autoComplete="off"
-        className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+        disabled={disabled}
+        className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
       />
       <button
         type="button"
         onClick={onToggle}
-        className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs"
+        disabled={disabled}
+        className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
       >
         {revealed ? "Ocultar" : "Ver"}
       </button>
@@ -257,6 +235,9 @@ export default function IntegracoesPage(): JSX.Element {
   const [health, setHealth] = useState<Record<ProviderKey, ConnectorHealth>>(parseHealthMap(null));
   const [status, setStatus] = useState("Carregando configuracoes...");
   const [busy, setBusy] = useState(false);
+  const [isEditUnlocked, setIsEditUnlocked] = useState(false);
+  const [showUnlockBox, setShowUnlockBox] = useState(false);
+  const [unlockPassword, setUnlockPassword] = useState("");
   const [revealed, setRevealed] = useState<Record<SensitiveKey, boolean>>({
     meta_app_id: false,
     meta_ba_id: false,
@@ -288,23 +269,20 @@ export default function IntegracoesPage(): JSX.Element {
     });
   };
 
+  const unlockEditing = (): void => {
+    if (unlockPassword === INTEGRATIONS_EDIT_PASSWORD) {
+      setIsEditUnlocked(true);
+      setShowUnlockBox(false);
+      setUnlockPassword("");
+      setStatus("Edicao de credenciais liberada para esta sessao.");
+      return;
+    }
+
+    setStatus("Senha de edicao invalida.");
+  };
+
   useEffect(() => {
     const load = async (): Promise<void> => {
-      const localMetaPref = readLocalPreference(META_PREF_KEY);
-      const localInstagramPref = readLocalPreference(INSTAGRAM_PREF_KEY);
-      const localStripePref = readLocalPreference(STRIPE_PREF_KEY);
-      const localReviewsPref = readLocalPreference(GOOGLE_REVIEWS_PREF_KEY);
-      const localFormsPref = readLocalPreference(GOOGLE_FORMS_PREF_KEY);
-      const localHealthPref = readLocalPreference(HEALTH_PREF_KEY);
-
-      setMeta(readStringObject(localMetaPref, EMPTY_META));
-      setInstagram(readStringObject(localInstagramPref, EMPTY_INSTAGRAM));
-      setStripe(readStringObject(localStripePref, EMPTY_STRIPE));
-      setGoogleReviews(readStringObject(localReviewsPref, EMPTY_GOOGLE_REVIEWS));
-      setGoogleForms(readStringObject(localFormsPref, EMPTY_GOOGLE_FORMS));
-      setHealth(parseHealthMap(localHealthPref));
-      setStatus("Configuracoes locais carregadas.");
-
       try {
         const [metaPref, instagramPref, stripePref, reviewsPref, formsPref, healthPref] = await Promise.all([
           getUserPreference(META_PREF_KEY),
@@ -315,12 +293,12 @@ export default function IntegracoesPage(): JSX.Element {
           getUserPreference(HEALTH_PREF_KEY),
         ]);
 
-        const resolvedMeta = readStringObject(metaPref ?? localMetaPref, EMPTY_META);
-        const resolvedInstagram = readStringObject(instagramPref ?? localInstagramPref, EMPTY_INSTAGRAM);
-        const resolvedStripe = readStringObject(stripePref ?? localStripePref, EMPTY_STRIPE);
-        const resolvedReviews = readStringObject(reviewsPref ?? localReviewsPref, EMPTY_GOOGLE_REVIEWS);
-        const resolvedForms = readStringObject(formsPref ?? localFormsPref, EMPTY_GOOGLE_FORMS);
-        const resolvedHealth = parseHealthMap(healthPref ?? localHealthPref);
+        const resolvedMeta = readStringObject(metaPref, EMPTY_META);
+        const resolvedInstagram = readStringObject(instagramPref, EMPTY_INSTAGRAM);
+        const resolvedStripe = readStringObject(stripePref, EMPTY_STRIPE);
+        const resolvedReviews = readStringObject(reviewsPref, EMPTY_GOOGLE_REVIEWS);
+        const resolvedForms = readStringObject(formsPref, EMPTY_GOOGLE_FORMS);
+        const resolvedHealth = parseHealthMap(healthPref);
 
         setMeta({ ...resolvedMeta, webhookUrl: resolvedMeta.webhookUrl || callbackUrl });
         setInstagram(resolvedInstagram);
@@ -330,7 +308,7 @@ export default function IntegracoesPage(): JSX.Element {
         setHealth(resolvedHealth);
         setStatus("Configuracoes carregadas.");
       } catch (error) {
-        setStatus(`Backend indisponivel, usando configuracoes locais: ${String(error)}`);
+        setStatus(`Falha ao carregar configuracoes no backend: ${String(error)}`);
       }
     };
 
@@ -346,26 +324,13 @@ export default function IntegracoesPage(): JSX.Element {
   } satisfies Record<ProviderKey, boolean>;
 
   const saveProvider = async (provider: ProviderKey): Promise<void> => {
+    if (!isEditUnlocked && provider !== "google_reviews") {
+      setStatus("Credenciais bloqueadas. Clique em Editar e informe a senha para salvar alteracoes.");
+      return;
+    }
+
     setBusy(true);
     setStatus(`Salvando configuracao de ${provider}...`);
-
-    const payloadByProvider: Record<ProviderKey, JsonValue> = {
-      meta_whatsapp: meta,
-      instagram,
-      stripe,
-      google_reviews: googleReviews,
-      google_forms: googleForms,
-    };
-
-    const prefKeyByProvider: Record<ProviderKey, string> = {
-      meta_whatsapp: META_PREF_KEY,
-      instagram: INSTAGRAM_PREF_KEY,
-      stripe: STRIPE_PREF_KEY,
-      google_reviews: GOOGLE_REVIEWS_PREF_KEY,
-      google_forms: GOOGLE_FORMS_PREF_KEY,
-    };
-
-    writeLocalPreference(prefKeyByProvider[provider], payloadByProvider[provider]);
 
     try {
       if (provider === "meta_whatsapp") await setUserPreference(META_PREF_KEY, meta);
@@ -374,9 +339,9 @@ export default function IntegracoesPage(): JSX.Element {
       if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
       if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
       hideAllSecrets();
-      setStatus(`Configuracao de ${provider} salva (local + backend).`);
+      setStatus(`Configuracao de ${provider} salva no backend.`);
     } catch (error) {
-      setStatus(`Configuracao de ${provider} salva localmente. Erro backend: ${String(error)}`);
+      setStatus(`Erro ao salvar ${provider} no backend: ${String(error)}`);
     } finally {
       setBusy(false);
     }
@@ -386,12 +351,14 @@ export default function IntegracoesPage(): JSX.Element {
     setBusy(true);
     setStatus(`Executando healthcheck de ${provider}...`);
 
-    const payloadByProvider: Record<ProviderKey, Record<string, string>> = {
-      meta_whatsapp: {
-        appId: meta.appId,
-        verifyToken: meta.verifyToken,
-        webhookUrl: meta.webhookUrl || callbackUrl,
-      },
+      const payloadByProvider: Record<ProviderKey, Record<string, string>> = {
+        meta_whatsapp: {
+          appId: meta.appId,
+          verifyToken: meta.verifyToken,
+          phoneNumberId: meta.phoneNumberId,
+          permanentToken: meta.permanentToken,
+          webhookUrl: meta.webhookUrl || callbackUrl,
+        },
       instagram: {
         appId: instagram.appId,
         accessToken: instagram.accessToken,
@@ -443,7 +410,6 @@ export default function IntegracoesPage(): JSX.Element {
       };
 
       setHealth(nextMap);
-      writeLocalPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
       await setUserPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
       setStatus(`Healthcheck de ${provider}: ${result.ok ? "OK" : "ERRO"}.`);
     } catch (error) {
@@ -487,7 +453,7 @@ export default function IntegracoesPage(): JSX.Element {
                 <p className="mt-1 text-sm text-slate-300">{health[key].detail}</p>
                 <p className="mt-1 text-xs text-slate-400">Ultimo check: {health[key].checkedAt ? new Date(health[key].checkedAt).toLocaleString() : "nunca"}</p>
                 <div className="mt-2 flex gap-2">
-                  <button onClick={() => void saveProvider(key)} disabled={busy} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs disabled:opacity-60">Salvar</button>
+                  <button onClick={() => void saveProvider(key)} disabled={busy || (!isEditUnlocked && key !== "google_reviews")} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs disabled:opacity-60">Salvar</button>
                   <button onClick={() => void testProvider(key)} disabled={busy} className="rounded-md border border-accent/40 bg-accent/10 px-2 py-1 text-xs text-accent disabled:opacity-60">Healthcheck</button>
                 </div>
               </div>
@@ -496,17 +462,54 @@ export default function IntegracoesPage(): JSX.Element {
         </article>
 
         <article className="section-card 2xl:col-span-7 space-y-4">
-          <h3 className="text-xl font-bold">Configuracao de conectores</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-xl font-bold">Configuracao de conectores</h3>
+            <div className="flex items-center gap-2">
+              <span className={`rounded-full px-2 py-1 text-xs ${isEditUnlocked ? "badge-ok" : "badge-warn"}`}>
+                {isEditUnlocked ? "Edicao liberada" : "Edicao bloqueada"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowUnlockBox((prev) => !prev)}
+                className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs"
+              >
+                Editar credenciais
+              </button>
+            </div>
+          </div>
+
+          {showUnlockBox ? (
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="mb-2 text-sm text-slate-300">Informe a senha para liberar edicao nesta sessao.</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="password"
+                  value={unlockPassword}
+                  onChange={(event) => setUnlockPassword(event.target.value)}
+                  placeholder="Senha de edicao"
+                  autoComplete="off"
+                  className="w-64 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={unlockEditing}
+                  className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent"
+                >
+                  Liberar
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Meta WhatsApp Cloud API</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={meta.appId} placeholder="App ID" revealed={revealed.meta_app_id} onToggle={() => toggleReveal("meta_app_id")} onChange={(value) => setMeta((prev) => ({ ...prev, appId: value }))} />
-              <SecretField value={meta.businessAccountId} placeholder="Business Account ID" revealed={revealed.meta_ba_id} onToggle={() => toggleReveal("meta_ba_id")} onChange={(value) => setMeta((prev) => ({ ...prev, businessAccountId: value }))} />
-              <SecretField value={meta.phoneNumberId} placeholder="Phone Number ID" revealed={revealed.meta_phone_id} onToggle={() => toggleReveal("meta_phone_id")} onChange={(value) => setMeta((prev) => ({ ...prev, phoneNumberId: value }))} />
-              <SecretField value={meta.verifyToken} placeholder="Verify Token" revealed={revealed.meta_verify_token} onToggle={() => toggleReveal("meta_verify_token")} onChange={(value) => setMeta((prev) => ({ ...prev, verifyToken: value }))} />
-              <input value={meta.webhookUrl} onChange={(event) => setMeta((prev) => ({ ...prev, webhookUrl: event.target.value }))} placeholder="Webhook URL publico" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm md:col-span-2" />
-              <SecretField value={meta.permanentToken} placeholder="Permanent Token" revealed={revealed.meta_permanent_token} onToggle={() => toggleReveal("meta_permanent_token")} onChange={(value) => setMeta((prev) => ({ ...prev, permanentToken: value }))} className="md:col-span-2" />
+              <SecretField value={meta.appId} placeholder="App ID" revealed={revealed.meta_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_app_id")} onChange={(value) => setMeta((prev) => ({ ...prev, appId: value }))} />
+              <SecretField value={meta.businessAccountId} placeholder="Business Account ID" revealed={revealed.meta_ba_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_ba_id")} onChange={(value) => setMeta((prev) => ({ ...prev, businessAccountId: value }))} />
+              <SecretField value={meta.phoneNumberId} placeholder="Phone Number ID" revealed={revealed.meta_phone_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_phone_id")} onChange={(value) => setMeta((prev) => ({ ...prev, phoneNumberId: value }))} />
+              <SecretField value={meta.verifyToken} placeholder="Verify Token" revealed={revealed.meta_verify_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_verify_token")} onChange={(value) => setMeta((prev) => ({ ...prev, verifyToken: value }))} />
+              <input value={meta.webhookUrl} onChange={(event) => setMeta((prev) => ({ ...prev, webhookUrl: event.target.value }))} placeholder="Webhook URL publico" disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 md:col-span-2" />
+              <SecretField value={meta.permanentToken} placeholder="Permanent Token" revealed={revealed.meta_permanent_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_permanent_token")} onChange={(value) => setMeta((prev) => ({ ...prev, permanentToken: value }))} className="md:col-span-2" />
             </div>
             <div className="mt-2 rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-slate-300">
               Callback interno da API: <strong>{callbackUrl}</strong>
@@ -516,18 +519,18 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Instagram Messaging</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={instagram.appId} placeholder="App ID" revealed={revealed.instagram_app_id} onToggle={() => toggleReveal("instagram_app_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, appId: value }))} />
-              <SecretField value={instagram.pageId} placeholder="Page/IG Business ID" revealed={revealed.instagram_page_id} onToggle={() => toggleReveal("instagram_page_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, pageId: value }))} />
-              <SecretField value={instagram.accessToken} placeholder="Access Token" revealed={revealed.instagram_access_token} onToggle={() => toggleReveal("instagram_access_token")} onChange={(value) => setInstagram((prev) => ({ ...prev, accessToken: value }))} className="md:col-span-2" />
+              <SecretField value={instagram.appId} placeholder="App ID" revealed={revealed.instagram_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_app_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, appId: value }))} />
+              <SecretField value={instagram.pageId} placeholder="Page/IG Business ID" revealed={revealed.instagram_page_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_page_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, pageId: value }))} />
+              <SecretField value={instagram.accessToken} placeholder="Access Token" revealed={revealed.instagram_access_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_access_token")} onChange={(value) => setInstagram((prev) => ({ ...prev, accessToken: value }))} className="md:col-span-2" />
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Stripe Billing</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={stripe.publishableKey} placeholder="Publishable Key" revealed={revealed.stripe_publishable_key} onToggle={() => toggleReveal("stripe_publishable_key")} onChange={(value) => setStripe((prev) => ({ ...prev, publishableKey: value }))} />
-              <SecretField value={stripe.webhookSecret} placeholder="Webhook Secret" revealed={revealed.stripe_webhook_secret} onToggle={() => toggleReveal("stripe_webhook_secret")} onChange={(value) => setStripe((prev) => ({ ...prev, webhookSecret: value }))} />
-              <SecretField value={stripe.secretKey} placeholder="Secret Key" revealed={revealed.stripe_secret_key} onToggle={() => toggleReveal("stripe_secret_key")} onChange={(value) => setStripe((prev) => ({ ...prev, secretKey: value }))} className="md:col-span-2" />
+              <SecretField value={stripe.publishableKey} placeholder="Publishable Key" revealed={revealed.stripe_publishable_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_publishable_key")} onChange={(value) => setStripe((prev) => ({ ...prev, publishableKey: value }))} />
+              <SecretField value={stripe.webhookSecret} placeholder="Webhook Secret" revealed={revealed.stripe_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_webhook_secret")} onChange={(value) => setStripe((prev) => ({ ...prev, webhookSecret: value }))} />
+              <SecretField value={stripe.secretKey} placeholder="Secret Key" revealed={revealed.stripe_secret_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_secret_key")} onChange={(value) => setStripe((prev) => ({ ...prev, secretKey: value }))} className="md:col-span-2" />
             </div>
           </div>
 
@@ -539,8 +542,8 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Google Forms</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <input value={googleForms.endpointUrl} onChange={(event) => setGoogleForms((prev) => ({ ...prev, endpointUrl: event.target.value }))} placeholder="Endpoint Apps Script / webhook" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <SecretField value={googleForms.webhookSecret} placeholder="Webhook Secret" revealed={revealed.forms_webhook_secret} onToggle={() => toggleReveal("forms_webhook_secret")} onChange={(value) => setGoogleForms((prev) => ({ ...prev, webhookSecret: value }))} />
+              <input value={googleForms.endpointUrl} onChange={(event) => setGoogleForms((prev) => ({ ...prev, endpointUrl: event.target.value }))} placeholder="Endpoint Apps Script / webhook" disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
+              <SecretField value={googleForms.webhookSecret} placeholder="Webhook Secret" revealed={revealed.forms_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("forms_webhook_secret")} onChange={(value) => setGoogleForms((prev) => ({ ...prev, webhookSecret: value }))} />
             </div>
           </div>
         </article>
