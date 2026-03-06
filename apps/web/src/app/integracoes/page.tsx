@@ -8,6 +8,7 @@ import { defaultAppHeaders } from "../../lib/apiClient";
 import {
   generateRecoveryCode,
   getVaultMeta,
+  getOperationalCache,
   getVaultSummary,
   recoverAndResetVault,
   saveVault,
@@ -208,6 +209,7 @@ export default function IntegracoesPage(): JSX.Element {
   useEffect(() => {
     const metadata = getVaultMeta();
     const summary = getVaultSummary();
+    const operationalCache = getOperationalCache();
 
     if (metadata.hasVault) {
       setHasVault(true);
@@ -218,6 +220,16 @@ export default function IntegracoesPage(): JSX.Element {
     } else {
       setStatus("Como e sua primeira vez acessando, informe sua senha para criar o cofre seguro.");
       setShowUnlockBox(true);
+    }
+
+    if (operationalCache) {
+      setMeta(operationalCache.meta);
+      setInstagram(operationalCache.instagram);
+      setStripe(operationalCache.stripe);
+      setGoogleReviews(operationalCache.googleReviews);
+      setGoogleForms(operationalCache.googleForms);
+      setHealth(operationalCache.health);
+      setStatus("Configuracoes operacionais carregadas. Use senha apenas para editar/salvar.");
     }
 
     if (summary) {
@@ -366,8 +378,6 @@ export default function IntegracoesPage(): JSX.Element {
     if (isEditUnlocked) {
       try {
         await persistEncrypted(result.map);
-        lockEditing();
-        setStatus(`Healthcheck de ${provider} executado e sessao bloqueada automaticamente.`);
       } catch (error) {
         setStatus(`Healthcheck executado, mas falhou ao persistir cofre: ${String(error)}`);
       }

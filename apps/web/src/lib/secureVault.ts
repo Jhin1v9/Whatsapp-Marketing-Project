@@ -3,6 +3,7 @@
 const VAULT_KEY = "integrations_secure_vault_v1";
 const META_KEY = "integrations_secure_meta_v1";
 const SUMMARY_KEY = "integrations_secure_summary_v1";
+const OPERATIONAL_CACHE_KEY = "integrations_operational_cache_v1";
 const ITERATIONS = 310000;
 
 export type HealthState = "untested" | "ok" | "error";
@@ -209,6 +210,10 @@ export function getVaultSummary(): VaultSummary | null {
   return readJson<VaultSummary>(SUMMARY_KEY);
 }
 
+export function getOperationalCache(): IntegrationsVaultData | null {
+  return readJson<IntegrationsVaultData>(OPERATIONAL_CACHE_KEY);
+}
+
 function computeFilled(data: IntegrationsVaultData): Record<ProviderKey, boolean> {
   return {
     meta_whatsapp: Boolean(data.meta.appId && data.meta.businessAccountId && data.meta.phoneNumberId && data.meta.verifyToken && data.meta.permanentToken && data.meta.webhookUrl),
@@ -224,6 +229,10 @@ function updateSummary(data: IntegrationsVaultData): void {
     health: data.health,
     filled: computeFilled(data),
   });
+}
+
+function updateOperationalCache(data: IntegrationsVaultData): void {
+  writeJson<IntegrationsVaultData>(OPERATIONAL_CACHE_KEY, data);
 }
 
 export async function setupVault(params: {
@@ -252,6 +261,7 @@ export async function setupVault(params: {
   writeJson(VAULT_KEY, encrypted);
   writeJson(META_KEY, meta);
   updateSummary(params.data);
+  updateOperationalCache(params.data);
 }
 
 export async function unlockVault(password: string): Promise<IntegrationsVaultData> {
@@ -273,6 +283,7 @@ export async function saveVault(password: string, data: IntegrationsVaultData): 
   const encrypted = await encryptData(password, data);
   writeJson(VAULT_KEY, encrypted);
   updateSummary(data);
+  updateOperationalCache(data);
 }
 
 export async function recoverAndResetVault(params: {
