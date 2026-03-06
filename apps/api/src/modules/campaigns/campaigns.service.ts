@@ -8,6 +8,7 @@ import type { ApproveCampaignDto } from "./dto/approve-campaign.dto";
 import type { CreateCampaignDto } from "./dto/create-campaign.dto";
 import type { GenerateAiDraftDto } from "./dto/generate-ai-draft.dto";
 import type { RunCampaignDto } from "./dto/run-campaign.dto";
+import type { UpdateCampaignDto } from "./dto/update-campaign.dto";
 
 export type CampaignStatus = "draft" | "scheduled" | "running" | "paused" | "completed";
 
@@ -64,6 +65,22 @@ export class CampaignsService {
     return this.campaigns.filter(
       (item) => item.tenantId === context.tenantId && item.workspaceId === context.workspaceId,
     );
+  }
+
+  update(context: RequestContext, campaignId: string, payload: UpdateCampaignDto): Campaign {
+    const campaign = this.findCampaign(context, campaignId);
+
+    const updated: Campaign = {
+      ...campaign,
+      ...(payload.name?.trim() ? { name: payload.name.trim() } : {}),
+      ...(payload.type ? { type: payload.type } : {}),
+      ...(payload.template?.trim() ? { template: payload.template.trim() } : {}),
+      ...(payload.recipients ? { recipients: payload.recipients } : {}),
+    };
+
+    const index = this.campaigns.findIndex((item) => item.id === campaign.id);
+    this.campaigns[index] = updated;
+    return updated;
   }
 
   generateAiDrafts(context: RequestContext, campaignId: string, payload: GenerateAiDraftDto): readonly AiDraft[] {

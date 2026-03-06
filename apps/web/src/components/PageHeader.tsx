@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -146,3 +146,4 @@ export function PageHeader({ title, subtitle, icon, actions, metrics }: PageHead
     </section>
   );
 }
+

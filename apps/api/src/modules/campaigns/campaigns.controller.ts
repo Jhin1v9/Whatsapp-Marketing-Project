@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+﻿import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { CurrentContext } from "../../common/decorators/current-context.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import type { RequestContext } from "../../common/types/request-context";
@@ -7,6 +7,7 @@ import { ApproveCampaignDto } from "./dto/approve-campaign.dto";
 import { CreateCampaignDto } from "./dto/create-campaign.dto";
 import { GenerateAiDraftDto } from "./dto/generate-ai-draft.dto";
 import { RunCampaignDto } from "./dto/run-campaign.dto";
+import { UpdateCampaignDto } from "./dto/update-campaign.dto";
 
 @Controller("campaigns")
 export class CampaignsController {
@@ -22,6 +23,16 @@ export class CampaignsController {
   @Roles("OWNER", "ADMIN", "AGENT", "MARKETING_MANAGER", "ANALYST")
   list(@CurrentContext() context: RequestContext) {
     return this.campaignsService.list(context);
+  }
+
+  @Patch(":campaignId")
+  @Roles("OWNER", "ADMIN", "MARKETING_MANAGER")
+  update(
+    @CurrentContext() context: RequestContext,
+    @Param("campaignId") campaignId: string,
+    @Body() payload: UpdateCampaignDto,
+  ) {
+    return this.campaignsService.update(context, campaignId, payload);
   }
 
   @Post(":campaignId/ai-drafts")

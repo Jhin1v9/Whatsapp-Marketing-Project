@@ -15,6 +15,7 @@ import { CampaignsModule } from "./modules/campaigns/campaigns.module";
 import { MetaWebhookModule } from "./modules/meta-webhook/meta-webhook.module";
 import { ComplianceModule } from "./modules/compliance/compliance.module";
 import { PreferencesModule } from "./modules/preferences/preferences.module";
+import { IntegrationHealthModule } from "./modules/integration-health/integration-health.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PreferencesModule } from "./modules/preferences/preferences.module";
     MetaWebhookModule,
     ComplianceModule,
     PreferencesModule,
+    IntegrationHealthModule,
   ],
   providers: [
     {
