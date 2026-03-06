@@ -47,8 +47,8 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
               />
             </div>
             <ThemeToggle />
-            <button className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent">➕ Campanha</button>
-            <button className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white">🔔 3</button>
+            <Link href="/campanhas" className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent">➕ Campanha</Link>
+            <Link href="/inbox" className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white">🔔 Inbox</Link>
             <Link href="/login" className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white">👤 Perfil</Link>
           </div>
         </header>

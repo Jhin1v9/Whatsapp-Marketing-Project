@@ -16,10 +16,10 @@ export function SidebarNav(): JSX.Element {
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-2">
-        <button className="quick-action">➕ Novo lead</button>
-        <button className="quick-action">📤 Importar</button>
-        <button className="quick-action">🧾 Relatorio</button>
-        <button className="quick-action">🛠️ Suporte</button>
+        <Link href="/clientes/novo" className="quick-action">➕ Novo lead</Link>
+        <Link href="/clientes" className="quick-action">📤 Importar</Link>
+        <Link href="/relatorios" className="quick-action">🧾 Relatorio</Link>
+        <Link href="/base-conhecimento" className="quick-action">🛠️ Suporte</Link>
       </div>
 
       <nav className="space-y-4">
