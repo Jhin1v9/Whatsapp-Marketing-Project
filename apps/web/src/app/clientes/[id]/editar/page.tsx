@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PageHeader } from "../../../../components/PageHeader";
 import { apiBaseUrl } from "../../../../lib/apiBase";
+import { defaultAppHeaders } from "../../../../lib/apiClient";
 
 type ContactDetails = {
   readonly contact: {
@@ -30,15 +31,7 @@ export default function EditClientePage(): JSX.Element {
   const [tagsCsv, setTagsCsv] = useState("");
   const [status, setStatus] = useState("Carregando...");
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-
-  const headers = {
-    ...(token ? { authorization: `Bearer ${token}` } : {}),
-    "x-tenant-id": "tenant_demo",
-    "x-workspace-id": "workspace_demo",
-    "x-user-id": "user_demo",
-    "x-role": "ADMIN",
-  };
+  const headers = defaultAppHeaders();
 
   useEffect(() => {
     const run = async (): Promise<void> => {
@@ -71,7 +64,7 @@ export default function EditClientePage(): JSX.Element {
       },
       body: JSON.stringify({
         firstName,
-        ...(lastName.trim() ? { lastName: lastName } : {}),
+        ...(lastName.trim() ? { lastName } : {}),
         phoneNumber,
         ...(whatsappProfileName.trim() ? { whatsappProfileName } : {}),
         source,
@@ -93,7 +86,7 @@ export default function EditClientePage(): JSX.Element {
         icon="✏️"
         title="Editar Cliente"
         subtitle="Atualize dados de contato, origem e tags de segmentacao."
-        actions={["Salvar alteracoes", "Ver historico", "Voltar"]}
+        actions={["Salvar alteracoes", "Voltar"]}
       />
 
       <section className="section-card">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DataOpsPanel } from "../../../components/DataOpsPanel";
 import { PageHeader } from "../../../components/PageHeader";
 import { apiBaseUrl } from "../../../lib/apiBase";
+import { defaultAppHeaders } from "../../../lib/apiClient";
 
 type CreateContactResponse = {
   readonly id: string;
@@ -26,10 +27,10 @@ const INITIAL_FORM: FormState = {
   lastName: "",
   phoneNumber: "+55",
   whatsappProfileName: "",
-  tagsCsv: "lead,novo",
+  tagsCsv: "",
   source: "website",
   consentGranted: true,
-  consentTextVersion: "v1.0-2026-03-06",
+  consentTextVersion: "v1.0",
   consentProof: "checkbox_form",
 };
 
@@ -42,30 +43,19 @@ export default function AddClientPage(): JSX.Element {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const authToken = (): string | null => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-    return localStorage.getItem("access_token");
-  };
-
   const submit = async (): Promise<void> => {
     setLoading(true);
     setStatus("Salvando cliente...");
 
     try {
-      const token = authToken();
+      const headers = {
+        ...defaultAppHeaders(),
+        "content-type": "application/json",
+      };
 
       const createResponse = await fetch(`${apiBaseUrl()}/contacts`, {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
-          "x-tenant-id": "tenant_demo",
-          "x-workspace-id": "workspace_demo",
-          "x-user-id": "user_demo",
-          "x-role": "ADMIN",
-        },
+        headers,
         body: JSON.stringify({
           phoneNumber: form.phoneNumber,
           firstName: form.firstName,
@@ -90,14 +80,7 @@ export default function AddClientPage(): JSX.Element {
       if (form.consentGranted) {
         const consentResponse = await fetch(`${apiBaseUrl()}/contacts/${created.id}/consents`, {
           method: "POST",
-          headers: {
-            "content-type": "application/json",
-            ...(token ? { authorization: `Bearer ${token}` } : {}),
-            "x-tenant-id": "tenant_demo",
-            "x-workspace-id": "workspace_demo",
-            "x-user-id": "user_demo",
-            "x-role": "ADMIN",
-          },
+          headers,
           body: JSON.stringify({
             textVersion: form.consentTextVersion,
             source: "manual_ui",
@@ -127,8 +110,8 @@ export default function AddClientPage(): JSX.Element {
       <PageHeader
         icon="➕"
         title="Agregar Cliente"
-        subtitle="Cadastro completo com consentimento e campos funcionais para operação comercial."
-        actions={["Salvar rascunho", "Importar planilha", "Duplicar cliente"]}
+        subtitle="Cadastro completo com consentimento e campos funcionais para operacao comercial."
+        actions={["Salvar rascunho", "Importar planilha"]}
         metrics={[
           { label: "Campos obrigatorios", value: "4" },
           { label: "Consentimento", value: "Opcional" },

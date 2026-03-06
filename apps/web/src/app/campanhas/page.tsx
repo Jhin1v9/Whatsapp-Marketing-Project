@@ -1,105 +1,117 @@
-﻿import { DataOpsPanel } from "../../components/DataOpsPanel";
+﻿"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
-import { campaigns } from "../../lib/mockData";
+import { StatusBadge } from "../../components/StatusBadge";
+import { apiBaseUrl } from "../../lib/apiBase";
+import { defaultAppHeaders } from "../../lib/apiClient";
+import type { BadgeTone } from "../../lib/statusMaps";
 
-const abTests = [
-  { campaign: "Higienizacao Sofa - Outono", winner: "Variacao B", replyRate: "41.2%", uplift: "+8.4%" },
-  { campaign: "Reativacao 90 dias", winner: "Variacao A", replyRate: "33.7%", uplift: "+5.1%" },
-] as const;
+type Campaign = {
+  readonly id: string;
+  readonly name: string;
+  readonly status: "draft" | "scheduled" | "running" | "paused" | "completed";
+  readonly recipients: readonly string[];
+  readonly approvedVariation?: string;
+};
 
-const schedules = [
-  { segment: "Clientes inativos", bestTime: "19:30", timezone: "America/Sao_Paulo" },
-  { segment: "Lead quente", bestTime: "11:10", timezone: "America/Sao_Paulo" },
-  { segment: "Pos-servico", bestTime: "16:20", timezone: "America/Sao_Paulo" },
-] as const;
+function tone(status: Campaign["status"]): BadgeTone {
+  if (status === "running" || status === "completed") return "ok";
+  if (status === "scheduled") return "warn";
+  return "danger";
+}
+
+function statusLabel(status: Campaign["status"]): string {
+  if (status === "running") return "Executando";
+  if (status === "scheduled") return "Agendada";
+  if (status === "completed") return "Concluida";
+  if (status === "paused") return "Pausada";
+  return "Rascunho";
+}
 
 export default function CampanhasPage(): JSX.Element {
+  const [campaigns, setCampaigns] = useState<readonly Campaign[]>([]);
+  const [status, setStatus] = useState("Carregando campanhas...");
+
+  useEffect(() => {
+    const load = async (): Promise<void> => {
+      try {
+        const response = await fetch(`${apiBaseUrl()}/campaigns`, {
+          headers: defaultAppHeaders(),
+        });
+
+        if (!response.ok) {
+          setStatus(`Falha ao carregar campanhas: ${await response.text()}`);
+          return;
+        }
+
+        const data = (await response.json()) as Campaign[];
+        setCampaigns(data);
+        setStatus("Campanhas carregadas da API.");
+      } catch (error) {
+        setStatus(`Erro ao carregar campanhas: ${String(error)}`);
+      }
+    };
+
+    void load();
+  }, []);
+
+  const metrics = useMemo(() => {
+    const active = campaigns.filter((item) => item.status === "running").length;
+    const approved = campaigns.filter((item) => !!item.approvedVariation).length;
+    const draft = campaigns.filter((item) => item.status === "draft").length;
+    return { active, approved, draft };
+  }, [campaigns]);
+
   return (
     <div className="space-y-6">
       <PageHeader
         icon="📣"
         title="Campanhas e Orquestracao"
-        subtitle="Execucao com consentimento, limite de envio, janela de horario e aprovacao obrigatoria de conteudo IA."
-        actions={["Nova campanha", "Clonar campanha", "Pausar em massa"]}
+        subtitle="Execucao real com consentimento, aprovacao humana e fila de envio."
+        actions={["Nova campanha"]}
         metrics={[
-          { label: "Ativas", value: "3" },
-          { label: "Aprovadas IA", value: "2" },
-          { label: "Opt-out medio", value: "1.9%" },
+          { label: "Ativas", value: String(metrics.active) },
+          { label: "Aprovadas IA", value: String(metrics.approved) },
+          { label: "Rascunho", value: String(metrics.draft) },
         ]}
       />
 
       <section className="grid gap-4 2xl:grid-cols-12">
         <article className="section-card 2xl:col-span-8">
-          <h3 className="text-xl font-bold">Campanhas Ativas</h3>
+          <h3 className="text-xl font-bold">Campanhas</h3>
           <div className="mt-4 space-y-3">
             {campaigns.map((campaign) => (
-              <div key={campaign.name} className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <div key={campaign.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold">{campaign.name}</p>
-                  <span className={campaign.status === "running" ? "badge-ok" : campaign.status === "scheduled" ? "badge-warn" : "badge-danger"}>
-                    {campaign.status}
-                  </span>
+                  <StatusBadge tone={tone(campaign.status)} label={statusLabel(campaign.status)} />
                 </div>
-                <p className="mt-1 text-sm text-slate-300">Audiencia: {campaign.audience} • IA: {campaign.approval}</p>
+                <p className="mt-1 text-sm text-slate-300">Audiencia: {campaign.recipients.length} • IA: {campaign.approvedVariation ?? "Pendente"}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Editar</button>
                   <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Duplicar</button>
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Pausar</button>
+                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Executar</button>
                 </div>
               </div>
             ))}
+            {campaigns.length === 0 ? <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">Sem campanhas cadastradas.</div> : null}
           </div>
         </article>
 
         <article className="section-card 2xl:col-span-4">
-          <h3 className="text-xl font-bold">Envio Inteligente</h3>
+          <h3 className="text-xl font-bold">Checklist de Envio</h3>
           <ul className="mt-4 space-y-2 text-sm text-slate-300">
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Timezone por contato aplicada automaticamente.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Predicao de melhor horario por historico de resposta.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Pausa automatica se opt-out acima do limite.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Rate limiting por numero e template.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Aprovacao humana obrigatoria da variacao IA.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Rate limit por tenant/workspace em execucao.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Fila de envio via BullMQ ativa no backend.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Somente contatos com consentimento devem receber marketing.</li>
           </ul>
         </article>
       </section>
 
-      <section className="grid gap-4 2xl:grid-cols-12">
-        <article className="section-card 2xl:col-span-6">
-          <h3 className="text-xl font-bold">A/B Testing</h3>
-          <div className="mt-4 space-y-3">
-            {abTests.map((ab) => (
-              <div key={ab.campaign} className="rounded-xl border border-white/10 bg-black/20 p-3">
-                <p className="font-semibold">{ab.campaign}</p>
-                <p className="mt-1 text-sm text-slate-300">Vencedora: {ab.winner} • Reply: {ab.replyRate}</p>
-                <p className="mt-1 text-sm text-slate-300">Uplift: {ab.uplift}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="section-card 2xl:col-span-6">
-          <h3 className="text-xl font-bold">Agenda Recomendada por Segmento</h3>
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-slate-300">
-                  <th className="px-3 py-2">Segmento</th>
-                  <th className="px-3 py-2">Melhor horario</th>
-                  <th className="px-3 py-2">Timezone</th>
-                </tr>
-              </thead>
-              <tbody>
-                {schedules.map((item) => (
-                  <tr key={item.segment} className="border-b border-white/5">
-                    <td className="px-3 py-2">{item.segment}</td>
-                    <td className="px-3 py-2">{item.bestTime}</td>
-                    <td className="px-3 py-2">{item.timezone}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
+      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
 
       <DataOpsPanel
         scopeLabel="Audiencias, templates e resultados de campanha"
@@ -109,4 +121,3 @@ export default function CampanhasPage(): JSX.Element {
     </div>
   );
 }
-
