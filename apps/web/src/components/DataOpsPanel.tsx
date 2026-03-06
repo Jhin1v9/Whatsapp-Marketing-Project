@@ -36,6 +36,13 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
             Importar XLSX
           </button>
           <button
+            onClick={() => void engine.runAction("Importar VCF")}
+            disabled={engine.busy}
+            className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Importar VCF
+          </button>
+          <button
             onClick={() => void engine.runAction("Exportar CSV")}
             disabled={engine.busy}
             className="rounded-lg border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:cursor-not-allowed disabled:opacity-60"
@@ -54,6 +61,7 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
 
       <input ref={engine.csvInputRef} onChange={(event) => void engine.onCsvInputChange(event)} type="file" accept=".csv" className="hidden" />
       <input ref={engine.xlsxInputRef} onChange={(event) => void engine.onXlsxInputChange(event)} type="file" accept=".xlsx" className="hidden" />
+      <input ref={engine.vcfInputRef} onChange={(event) => void engine.onVcfInputChange(event)} type="file" accept=".vcf,text/vcard,text/x-vcard" className="hidden" />
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">

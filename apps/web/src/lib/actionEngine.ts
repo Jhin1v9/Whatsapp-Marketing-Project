@@ -6,6 +6,7 @@ export type ActionIntent =
   | "nav_support"
   | "import_csv"
   | "import_xlsx"
+  | "import_vcf"
   | "export_csv"
   | "export_json"
   | "refresh"
@@ -30,6 +31,7 @@ export function resolveActionIntent(actionLabel: string): ActionIntent {
   if (action.includes("lead") || action.includes("cliente") || action.includes("contato")) return "nav_add_lead";
 
   if (action.includes("importar xlsx") || action.includes("importacao xlsx")) return "import_xlsx";
+  if (action.includes("importar vcf") || action.includes("contatos celular") || action.includes("contato celular")) return "import_vcf";
   if (action.includes("importar") || action.includes("importacao")) return "import_csv";
 
   if (action.includes("exportar csv")) return "export_csv";
@@ -46,4 +48,3 @@ export function routeByIntent(intent: ActionIntent): string | null {
   if (intent === "nav_support") return "/base-conhecimento";
   return null;
 }
-

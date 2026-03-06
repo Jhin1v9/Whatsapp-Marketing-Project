@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { resolveActionIntent, routeByIntent } from "../lib/actionEngine";
-import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv, importContactsFromXlsx } from "../lib/quickActions";
+import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv, importContactsFromVcf, importContactsFromXlsx } from "../lib/quickActions";
 
 type ActionEngine = {
   readonly busy: boolean;
@@ -11,10 +11,13 @@ type ActionEngine = {
   readonly runAction: (label: string) => Promise<void>;
   readonly onCsvInputChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   readonly onXlsxInputChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
+  readonly onVcfInputChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   readonly triggerCsvInput: () => void;
   readonly triggerXlsxInput: () => void;
+  readonly triggerVcfInput: () => void;
   readonly csvInputRef: RefObject<HTMLInputElement>;
   readonly xlsxInputRef: RefObject<HTMLInputElement>;
+  readonly vcfInputRef: RefObject<HTMLInputElement>;
   readonly clearStatus: () => void;
 };
 
@@ -22,6 +25,7 @@ export function useActionEngine(): ActionEngine {
   const router = useRouter();
   const csvInputRef = useRef<HTMLInputElement | null>(null);
   const xlsxInputRef = useRef<HTMLInputElement | null>(null);
+  const vcfInputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -33,6 +37,10 @@ export function useActionEngine(): ActionEngine {
 
   const triggerXlsxInput = (): void => {
     xlsxInputRef.current?.click();
+  };
+
+  const triggerVcfInput = (): void => {
+    vcfInputRef.current?.click();
   };
 
   const onCsvInputChange = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -73,6 +81,25 @@ export function useActionEngine(): ActionEngine {
     }
   };
 
+  const onVcfInputChange = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setBusy(true);
+    setStatus(`Importando ${file.name}...`);
+    try {
+      const result = await importContactsFromVcf(file);
+      const updated = result.updated ?? 0;
+      setStatus(`Importacao VCF concluida: ${result.created} criados, ${updated} atualizados, ${result.failed} falhas.`);
+      router.refresh();
+    } catch (error) {
+      setStatus(`Falha na importacao VCF: ${String(error)}`);
+    } finally {
+      setBusy(false);
+      event.target.value = "";
+    }
+  };
+
   const runAction = async (label: string): Promise<void> => {
     const intent = resolveActionIntent(label);
     const route = routeByIntent(intent);
@@ -90,6 +117,11 @@ export function useActionEngine(): ActionEngine {
 
     if (intent === "import_xlsx") {
       triggerXlsxInput();
+      return;
+    }
+
+    if (intent === "import_vcf") {
+      triggerVcfInput();
       return;
     }
 
@@ -135,10 +167,13 @@ export function useActionEngine(): ActionEngine {
     runAction,
     onCsvInputChange,
     onXlsxInputChange,
+    onVcfInputChange,
     triggerCsvInput,
     triggerXlsxInput,
+    triggerVcfInput,
     csvInputRef,
     xlsxInputRef,
+    vcfInputRef,
     clearStatus,
   };
 }

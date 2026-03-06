@@ -150,6 +150,30 @@ export async function importContactsFromXlsx(file: File): Promise<ImportResult> 
   return result;
 }
 
+export async function importContactsFromVcf(file: File): Promise<ImportResult> {
+  const text = await file.text();
+
+  const response = await fetch(`${apiBaseUrl()}/contacts/import-vcf`, {
+    method: "POST",
+    headers: {
+      ...defaultAppHeaders(),
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      fileName: file.name,
+      rawText: text,
+      source: "phone_vcf_import",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao importar VCF: ${await response.text()}`);
+  }
+
+  const result = (await response.json()) as ImportResult;
+  return result;
+}
+
 function triggerDownload(filename: string, content: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);

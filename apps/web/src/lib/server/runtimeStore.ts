@@ -588,6 +588,159 @@ export function importContactsFromXlsx(
   return { created, updated, failed, errors };
 }
 
+function unfoldVCardLines(rawText: string): string[] {
+  const normalized = rawText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = normalized.split("\n");
+  const unfolded: string[] = [];
+
+  for (const line of lines) {
+    if ((line.startsWith(" ") || line.startsWith("\t")) && unfolded.length > 0) {
+      const last = unfolded[unfolded.length - 1] ?? "";
+      unfolded[unfolded.length - 1] = `${last}${line.trim()}`;
+      continue;
+    }
+    unfolded.push(line);
+  }
+
+  return unfolded;
+}
+
+function parseVCardEntries(rawText: string): Array<{ readonly fullName: string; readonly phone: string }> {
+  const lines = unfoldVCardLines(rawText);
+  const entries: Array<{ readonly fullName: string; readonly phone: string }> = [];
+  let currentName = "";
+  let currentPhone = "";
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith("BEGIN:VCARD")) {
+      currentName = "";
+      currentPhone = "";
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith("FN:")) {
+      currentName = trimmed.slice(3).trim();
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith("N:") && !currentName) {
+      const nValue = trimmed.slice(2).trim();
+      const parts = nValue.split(";");
+      const last = (parts[0] ?? "").trim();
+      const first = (parts[1] ?? "").trim();
+      currentName = `${first} ${last}`.trim();
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith("TEL")) {
+      const separatorIndex = trimmed.indexOf(":");
+      if (separatorIndex > -1) {
+        currentPhone = trimmed.slice(separatorIndex + 1).trim();
+      }
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith("END:VCARD")) {
+      if (currentPhone) {
+        entries.push({
+          fullName: currentName || "Contato",
+          phone: currentPhone,
+        });
+      }
+      currentName = "";
+      currentPhone = "";
+    }
+  }
+
+  return entries;
+}
+
+function splitImportedName(fullName: string): { readonly firstName: string; readonly lastName?: string } {
+  const cleaned = fullName.trim().replace(/\s+/g, " ");
+  if (!cleaned) {
+    return { firstName: "Contato" };
+  }
+  const parts = cleaned.split(" ");
+  const firstName = parts[0] ?? "Contato";
+  const lastName = parts.slice(1).join(" ").trim();
+  return {
+    firstName,
+    ...(lastName ? { lastName } : {}),
+  };
+}
+
+export function importContactsFromVcf(
+  context: RequestContext,
+  payload: {
+    readonly fileName: string;
+    readonly rawText: string;
+    readonly source?: string;
+  },
+): {
+  readonly created: number;
+  readonly updated: number;
+  readonly failed: number;
+  readonly errors: readonly string[];
+} {
+  const source = payload.source?.trim() || "vcf_import";
+  const entries = parseVCardEntries(payload.rawText);
+  if (entries.length === 0) {
+    return {
+      created: 0,
+      updated: 0,
+      failed: 0,
+      errors: ["Nenhum contato valido encontrado no arquivo VCF."],
+    };
+  }
+
+  let created = 0;
+  let updated = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+    if (!entry) {
+      continue;
+    }
+
+    let normalizedPhone = "";
+    try {
+      normalizedPhone = normalizePhone(entry.phone);
+    } catch {
+      failed += 1;
+      errors.push(`Contato ${index + 1}: telefone invalido (${entry.phone}).`);
+      continue;
+    }
+
+    const nameParts = splitImportedName(entry.fullName);
+    const existing = findContactByPhone(context, normalizedPhone);
+    if (existing) {
+      updateContact(context, existing.id, {
+        firstName: nameParts.firstName,
+        ...(nameParts.lastName ? { lastName: nameParts.lastName } : {}),
+        source,
+      });
+      updated += 1;
+    } else {
+      createContact(context, {
+        phoneNumber: normalizedPhone,
+        firstName: nameParts.firstName,
+        ...(nameParts.lastName ? { lastName: nameParts.lastName } : {}),
+        source,
+      });
+      created += 1;
+    }
+  }
+
+  return { created, updated, failed, errors };
+}
+
 export function listMessages(context: RequestContext): readonly MessageRecord[] {
   const store = getStore();
   return store.messages.filter((item) => item.tenantId === context.tenantId && item.workspaceId === context.workspaceId);
