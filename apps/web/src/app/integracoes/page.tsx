@@ -105,14 +105,15 @@ function SecretField({ value, placeholder, revealed, disabled, onToggle, onChang
         disabled={disabled}
         className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
       />
-      <button
-        type="button"
-        onClick={onToggle}
-        disabled={disabled}
-        className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {revealed ? "Ocultar" : "Ver"}
-      </button>
+      {!disabled ? (
+        <button
+          type="button"
+          onClick={onToggle}
+          className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs"
+        >
+          {revealed ? "Ocultar" : "Ver"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -182,6 +183,27 @@ export default function IntegracoesPage(): JSX.Element {
     googleForms,
     health: nextHealth ?? health,
   });
+
+  const lockEditing = (): void => {
+    setIsEditUnlocked(false);
+    setSessionPassword("");
+    setUnlockPassword("");
+    setShowUnlockBox(false);
+    setRevealed({
+      meta_app_id: false,
+      meta_ba_id: false,
+      meta_phone_id: false,
+      meta_verify_token: false,
+      meta_permanent_token: false,
+      instagram_app_id: false,
+      instagram_page_id: false,
+      instagram_access_token: false,
+      stripe_publishable_key: false,
+      stripe_secret_key: false,
+      stripe_webhook_secret: false,
+      forms_webhook_secret: false,
+    });
+  };
 
   useEffect(() => {
     const metadata = getVaultMeta();
@@ -326,8 +348,11 @@ export default function IntegracoesPage(): JSX.Element {
       const result = await runHealthcheck(provider);
       await persistEncrypted(result.map);
       if (!result.ok) {
-        setStatus(`Configuracao salva no cofre, mas validacao falhou para ${provider}.`);
+        setStatus(`Configuracao salva no cofre, mas validacao falhou para ${provider}. Edicao bloqueada automaticamente.`);
+      } else {
+        setStatus(`Configuracao de ${provider} salva e validada. Edicao bloqueada automaticamente.`);
       }
+      lockEditing();
     } catch (error) {
       setStatus(`Erro ao salvar ${provider}: ${String(error)}`);
     } finally {
