@@ -83,6 +83,7 @@ const STRIPE_PREF_KEY = "integration_stripe_config";
 const GOOGLE_REVIEWS_PREF_KEY = "integration_google_reviews_config";
 const GOOGLE_FORMS_PREF_KEY = "integration_google_forms_config";
 const HEALTH_PREF_KEY = "integration_health_state";
+const LOCAL_PREF_PREFIX = "integration_local_";
 
 const EMPTY_META: MetaConfig = {
   appId: "",
@@ -130,6 +131,31 @@ function readStringObject<T extends Record<string, string>>(value: JsonValue | n
   }
 
   return out;
+}
+
+function readLocalPreference(key: string): JsonValue | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = localStorage.getItem(`${LOCAL_PREF_PREFIX}${key}`);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as JsonValue;
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalPreference(key: string, value: JsonValue): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.setItem(`${LOCAL_PREF_PREFIX}${key}`, JSON.stringify(value));
 }
 
 function parseHealthMap(value: JsonValue | null): Record<ProviderKey, ConnectorHealth> {
@@ -264,6 +290,21 @@ export default function IntegracoesPage(): JSX.Element {
 
   useEffect(() => {
     const load = async (): Promise<void> => {
+      const localMetaPref = readLocalPreference(META_PREF_KEY);
+      const localInstagramPref = readLocalPreference(INSTAGRAM_PREF_KEY);
+      const localStripePref = readLocalPreference(STRIPE_PREF_KEY);
+      const localReviewsPref = readLocalPreference(GOOGLE_REVIEWS_PREF_KEY);
+      const localFormsPref = readLocalPreference(GOOGLE_FORMS_PREF_KEY);
+      const localHealthPref = readLocalPreference(HEALTH_PREF_KEY);
+
+      setMeta(readStringObject(localMetaPref, EMPTY_META));
+      setInstagram(readStringObject(localInstagramPref, EMPTY_INSTAGRAM));
+      setStripe(readStringObject(localStripePref, EMPTY_STRIPE));
+      setGoogleReviews(readStringObject(localReviewsPref, EMPTY_GOOGLE_REVIEWS));
+      setGoogleForms(readStringObject(localFormsPref, EMPTY_GOOGLE_FORMS));
+      setHealth(parseHealthMap(localHealthPref));
+      setStatus("Configuracoes locais carregadas.");
+
       try {
         const [metaPref, instagramPref, stripePref, reviewsPref, formsPref, healthPref] = await Promise.all([
           getUserPreference(META_PREF_KEY),
@@ -274,21 +315,27 @@ export default function IntegracoesPage(): JSX.Element {
           getUserPreference(HEALTH_PREF_KEY),
         ]);
 
-        setMeta(readStringObject(metaPref, EMPTY_META));
-        setInstagram(readStringObject(instagramPref, EMPTY_INSTAGRAM));
-        setStripe(readStringObject(stripePref, EMPTY_STRIPE));
-        setGoogleReviews(readStringObject(reviewsPref, EMPTY_GOOGLE_REVIEWS));
-        setGoogleForms(readStringObject(formsPref, EMPTY_GOOGLE_FORMS));
-        setHealth(parseHealthMap(healthPref));
-        setMeta((prev) => ({ ...prev, webhookUrl: prev.webhookUrl || callbackUrl }));
+        const resolvedMeta = readStringObject(metaPref ?? localMetaPref, EMPTY_META);
+        const resolvedInstagram = readStringObject(instagramPref ?? localInstagramPref, EMPTY_INSTAGRAM);
+        const resolvedStripe = readStringObject(stripePref ?? localStripePref, EMPTY_STRIPE);
+        const resolvedReviews = readStringObject(reviewsPref ?? localReviewsPref, EMPTY_GOOGLE_REVIEWS);
+        const resolvedForms = readStringObject(formsPref ?? localFormsPref, EMPTY_GOOGLE_FORMS);
+        const resolvedHealth = parseHealthMap(healthPref ?? localHealthPref);
+
+        setMeta({ ...resolvedMeta, webhookUrl: resolvedMeta.webhookUrl || callbackUrl });
+        setInstagram(resolvedInstagram);
+        setStripe(resolvedStripe);
+        setGoogleReviews(resolvedReviews);
+        setGoogleForms(resolvedForms);
+        setHealth(resolvedHealth);
         setStatus("Configuracoes carregadas.");
       } catch (error) {
-        setStatus(`Falha ao carregar configuracoes: ${String(error)}`);
+        setStatus(`Backend indisponivel, usando configuracoes locais: ${String(error)}`);
       }
     };
 
     void load();
-  }, []);
+  }, [callbackUrl]);
 
   const configured = {
     meta_whatsapp: Boolean(meta.appId && meta.businessAccountId && meta.phoneNumberId && meta.verifyToken && meta.permanentToken && meta.webhookUrl),
@@ -302,6 +349,24 @@ export default function IntegracoesPage(): JSX.Element {
     setBusy(true);
     setStatus(`Salvando configuracao de ${provider}...`);
 
+    const payloadByProvider: Record<ProviderKey, JsonValue> = {
+      meta_whatsapp: meta,
+      instagram,
+      stripe,
+      google_reviews: googleReviews,
+      google_forms: googleForms,
+    };
+
+    const prefKeyByProvider: Record<ProviderKey, string> = {
+      meta_whatsapp: META_PREF_KEY,
+      instagram: INSTAGRAM_PREF_KEY,
+      stripe: STRIPE_PREF_KEY,
+      google_reviews: GOOGLE_REVIEWS_PREF_KEY,
+      google_forms: GOOGLE_FORMS_PREF_KEY,
+    };
+
+    writeLocalPreference(prefKeyByProvider[provider], payloadByProvider[provider]);
+
     try {
       if (provider === "meta_whatsapp") await setUserPreference(META_PREF_KEY, meta);
       if (provider === "instagram") await setUserPreference(INSTAGRAM_PREF_KEY, instagram);
@@ -309,9 +374,9 @@ export default function IntegracoesPage(): JSX.Element {
       if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
       if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
       hideAllSecrets();
-      setStatus(`Configuracao de ${provider} salva.`);
+      setStatus(`Configuracao de ${provider} salva (local + backend).`);
     } catch (error) {
-      setStatus(`Erro ao salvar ${provider}: ${String(error)}`);
+      setStatus(`Configuracao de ${provider} salva localmente. Erro backend: ${String(error)}`);
     } finally {
       setBusy(false);
     }
@@ -378,6 +443,7 @@ export default function IntegracoesPage(): JSX.Element {
       };
 
       setHealth(nextMap);
+      writeLocalPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
       await setUserPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
       setStatus(`Healthcheck de ${provider}: ${result.ok ? "OK" : "ERRO"}.`);
     } catch (error) {
