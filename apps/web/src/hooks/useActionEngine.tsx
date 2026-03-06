@@ -4,6 +4,7 @@ import { useRef, useState, type ChangeEvent, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { resolveActionIntent, routeByIntent } from "../lib/actionEngine";
 import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv, importContactsFromVcf, importContactsFromXlsx } from "../lib/quickActions";
+import { setUserPreference } from "../lib/apiClient";
 
 type ActionEngine = {
   readonly busy: boolean;
@@ -30,6 +31,36 @@ export function useActionEngine(): ActionEngine {
   const [status, setStatus] = useState("");
 
   const clearStatus = (): void => setStatus("");
+
+  const createIcsAndDownload = (): void => {
+    const now = new Date();
+    const later = new Date(now.getTime() + 30 * 60 * 1000);
+    const toUtcStamp = (value: Date): string =>
+      value.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//WhatsApp Marketing SaaS//Agenda//PT-BR",
+      "BEGIN:VEVENT",
+      `UID:agenda-${now.getTime()}@whatsapp-marketing-project`,
+      `DTSTAMP:${toUtcStamp(now)}`,
+      `DTSTART:${toUtcStamp(now)}`,
+      `DTEND:${toUtcStamp(later)}`,
+      "SUMMARY:Follow-up comercial",
+      "DESCRIPTION:Evento exportado pelo painel de agenda.",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\n");
+
+    const blob = new Blob([ics], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `agenda-${now.toISOString().slice(0, 10)}.ics`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   const triggerCsvInput = (): void => {
     csvInputRef.current?.click();
@@ -110,6 +141,12 @@ export function useActionEngine(): ActionEngine {
       return;
     }
 
+    if (intent === "go_back") {
+      router.back();
+      setStatus("Voltando para a tela anterior.");
+      return;
+    }
+
     if (intent === "import_csv") {
       triggerCsvInput();
       return;
@@ -153,8 +190,45 @@ export function useActionEngine(): ActionEngine {
       return;
     }
 
+    if (intent === "export_ical") {
+      createIcsAndDownload();
+      setStatus("Arquivo iCal exportado.");
+      return;
+    }
+
+    if (intent === "share_link") {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setStatus("Link da pagina copiado.");
+      } catch {
+        setStatus("Nao foi possivel copiar o link automaticamente.");
+      }
+      return;
+    }
+
+    if (intent === "save_checkpoint") {
+      try {
+        const key = `checkpoint_${window.location.pathname.replaceAll("/", "_") || "home"}`;
+        await setUserPreference(key, {
+          action: label,
+          savedAt: new Date().toISOString(),
+        });
+        setStatus(`Estado salvo para "${label}".`);
+      } catch (error) {
+        setStatus(`Falha ao salvar estado: ${String(error)}`);
+      }
+      return;
+    }
+
+    if (intent === "open_google") {
+      window.open("https://calendar.google.com", "_blank", "noopener,noreferrer");
+      setStatus("Google Calendar aberto em nova aba.");
+      return;
+    }
+
     if (route) {
       router.push(route);
+      setStatus(`Abrindo: ${label}`);
       return;
     }
 

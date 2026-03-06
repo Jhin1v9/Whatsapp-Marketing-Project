@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 import { useActionEngine } from "../hooks/useActionEngine";
 import { findNavItem } from "../lib/navigation";
 import { GlobalFiltersBar } from "./GlobalFiltersBar";
@@ -12,6 +12,7 @@ import { ThemeToggle } from "./ThemeToggle";
 export function AppFrame({ children }: { readonly children: ReactNode }): JSX.Element {
   const pathname = usePathname();
   const engine = useActionEngine();
+  const [quickSearch, setQuickSearch] = useState("");
   const authPage = pathname === "/login" || pathname === "/register";
 
   if (authPage) {
@@ -23,6 +24,38 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
   }
 
   const current = findNavItem(pathname);
+
+  const runQuickSearch = (): void => {
+    const q = quickSearch.trim().toLowerCase();
+    if (!q) {
+      return;
+    }
+
+    if (q.includes("campanha")) {
+      void engine.runAction("Nova campanha");
+      return;
+    }
+    if (q.includes("inbox") || q.includes("mensagem")) {
+      void engine.runAction("Inbox");
+      return;
+    }
+    if (q.includes("cliente") || q.includes("contato")) {
+      void engine.runAction("Novo cliente");
+      return;
+    }
+    if (q.includes("integrac")) {
+      void engine.runAction("Editar credenciais");
+      return;
+    }
+
+    void engine.runAction("Relatorio");
+  };
+
+  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === "Enter") {
+      runQuickSearch();
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -46,6 +79,9 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
                 className="topbar-search"
                 placeholder="Buscar contatos, campanhas, mensagens, relatorios..."
                 aria-label="Busca global"
+                value={quickSearch}
+                onChange={(event) => setQuickSearch(event.target.value)}
+                onKeyDown={onSearchKeyDown}
               />
             </div>
             <ThemeToggle />
@@ -69,6 +105,7 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
 
         <input ref={engine.csvInputRef} onChange={(event) => void engine.onCsvInputChange(event)} type="file" accept=".csv" className="hidden" />
         <input ref={engine.xlsxInputRef} onChange={(event) => void engine.onXlsxInputChange(event)} type="file" accept=".xlsx" className="hidden" />
+        <input ref={engine.vcfInputRef} onChange={(event) => void engine.onVcfInputChange(event)} type="file" accept=".vcf,text/vcard,text/x-vcard" className="hidden" />
 
         {engine.status ? <div className="mb-3 rounded-xl border border-white/10 bg-black/20 p-2 text-xs text-slate-300">{engine.status}</div> : null}
 

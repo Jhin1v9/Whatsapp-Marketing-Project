@@ -1,20 +1,110 @@
-﻿import { DataOpsPanel } from "../../components/DataOpsPanel";
+"use client";
+
+import { useMemo, useState } from "react";
+import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
 
-const drafts = [
-  { title: "Promo limpeza de sofa", language: "pt-BR", status: "Pendente aprovacao", owner: "Marina" },
-  { title: "Pos-venda impermeabilizacao", language: "pt-BR", status: "Aprovado", owner: "Ana" },
-  { title: "Reengajamento 60 dias", language: "es-ES", status: "Em edicao", owner: "Lucas" },
+type DraftStatus = "Pendente aprovacao" | "Aprovado" | "Em edicao";
+
+type Draft = {
+  readonly id: string;
+  readonly title: string;
+  readonly language: string;
+  readonly owner: string;
+  readonly content: string;
+  readonly status: DraftStatus;
+};
+
+const INITIAL_DRAFTS: readonly Draft[] = [
+  {
+    id: "draft_1",
+    title: "Promo limpeza de sofa",
+    language: "pt-BR",
+    status: "Pendente aprovacao",
+    owner: "Marina",
+    content: "Oi {{first_name}}, essa semana temos condicoes especiais para limpeza de sofa.",
+  },
+  {
+    id: "draft_2",
+    title: "Pos-venda impermeabilizacao",
+    language: "pt-BR",
+    status: "Aprovado",
+    owner: "Ana",
+    content: "Obrigado pelo servico. Quer garantir mais durabilidade com impermeabilizacao?",
+  },
+  {
+    id: "draft_3",
+    title: "Reengajamento 60 dias",
+    language: "es-ES",
+    status: "Em edicao",
+    owner: "Lucas",
+    content: "Hola {{first_name}}, tenemos nuevos horarios para higienizacion este mes.",
+  },
 ] as const;
 
 const promptBlocks = [
   "Objetivo da campanha",
   "Segmento e dor principal",
   "Tom da marca por tenant",
-  "Restrições de compliance",
+  "Restricoes de compliance",
 ] as const;
 
 export default function IaStudioPage(): JSX.Element {
+  const [drafts, setDrafts] = useState<readonly Draft[]>(INITIAL_DRAFTS);
+  const [selectedDraftId, setSelectedDraftId] = useState<string | null>(INITIAL_DRAFTS[0]?.id ?? null);
+  const [promptText, setPromptText] = useState("");
+  const [status, setStatus] = useState("IA Studio pronto. Selecione um draft para revisar.");
+
+  const selectedDraft = useMemo(
+    () => drafts.find((draft) => draft.id === selectedDraftId) ?? null,
+    [drafts, selectedDraftId],
+  );
+
+  const updateDraftStatus = (draftId: string, nextStatus: DraftStatus): void => {
+    setDrafts((prev) => prev.map((draft) => (draft.id === draftId ? { ...draft, status: nextStatus } : draft)));
+  };
+
+  const onVisualize = (draft: Draft): void => {
+    setSelectedDraftId(draft.id);
+    setStatus(`Draft "${draft.title}" carregado para visualizacao.`);
+  };
+
+  const onEdit = (draft: Draft): void => {
+    setSelectedDraftId(draft.id);
+    updateDraftStatus(draft.id, "Em edicao");
+    setStatus(`Draft "${draft.title}" aberto em modo de edicao.`);
+  };
+
+  const onApprove = (draft: Draft): void => {
+    updateDraftStatus(draft.id, "Aprovado");
+    setStatus(`Draft "${draft.title}" aprovado com sucesso.`);
+  };
+
+  const onGenerateVariations = (): void => {
+    if (!promptText.trim()) {
+      setStatus("Informe contexto no Builder de Prompt para gerar variacoes.");
+      return;
+    }
+
+    const newDraft: Draft = {
+      id: `draft_${Date.now()}`,
+      title: `Variacao automatica ${drafts.length + 1}`,
+      language: "pt-BR",
+      owner: "IA Studio",
+      status: "Pendente aprovacao",
+      content: `Mensagem gerada para: ${promptText.trim().slice(0, 120)}`,
+    };
+
+    setDrafts((prev) => [newDraft, ...prev]);
+    setSelectedDraftId(newDraft.id);
+    setStatus("3 variacoes geradas (amostra criada no painel).");
+  };
+
+  const onApproveBatch = (): void => {
+    setDrafts((prev) => prev.map((draft) => ({ ...draft, status: "Aprovado" })));
+    setStatus("Lote aprovado. Todos os drafts ativos foram marcados como aprovados.");
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -28,7 +118,7 @@ export default function IaStudioPage(): JSX.Element {
           <h3 className="text-xl font-bold">Drafts de Conteudo</h3>
           <div className="mt-4 space-y-3">
             {drafts.map((draft) => (
-              <div key={draft.title} className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <div key={draft.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold">{draft.title}</p>
                   <span className={draft.status === "Aprovado" ? "badge-ok" : draft.status === "Em edicao" ? "badge-warn" : "badge-danger"}>
@@ -37,9 +127,9 @@ export default function IaStudioPage(): JSX.Element {
                 </div>
                 <p className="mt-1 text-sm text-slate-300">Idioma: {draft.language} • Responsavel: {draft.owner}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Visualizar</button>
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Editar</button>
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Aprovar</button>
+                  <button onClick={() => onVisualize(draft)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Visualizar</button>
+                  <button onClick={() => onEdit(draft)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Editar</button>
+                  <button onClick={() => onApprove(draft)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Aprovar</button>
                 </div>
               </div>
             ))}
@@ -55,9 +145,32 @@ export default function IaStudioPage(): JSX.Element {
               </div>
             ))}
           </div>
-          <textarea className="mt-3 min-h-36 w-full rounded-xl border border-white/15 bg-black/20 p-3 text-sm" placeholder="Contexto da empresa, produto e objetivo da mensagem..." />
+          <textarea
+            value={promptText}
+            onChange={(event) => setPromptText(event.target.value)}
+            className="mt-3 min-h-36 w-full rounded-xl border border-white/15 bg-black/20 p-3 text-sm"
+            placeholder="Contexto da empresa, produto e objetivo da mensagem..."
+          />
+          <div className="mt-3 flex gap-2">
+            <button onClick={onGenerateVariations} className="rounded-md border border-accent/50 bg-accent/10 px-3 py-2 text-xs font-semibold text-accent">
+              Gerar variacoes
+            </button>
+            <button onClick={onApproveBatch} className="rounded-md border border-white/15 bg-white/5 px-3 py-2 text-xs">
+              Aprovar lote
+            </button>
+          </div>
         </article>
       </section>
+
+      {selectedDraft ? (
+        <section className="section-card">
+          <h3 className="text-xl font-bold">Preview do Draft Selecionado</h3>
+          <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
+            <p className="font-semibold text-white">{selectedDraft.title}</p>
+            <p className="mt-2">{selectedDraft.content}</p>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 2xl:grid-cols-12">
         <article className="section-card 2xl:col-span-7">
@@ -85,6 +198,8 @@ export default function IaStudioPage(): JSX.Element {
         importHint="Importe biblioteca de prompts e estilos de marca para acelerar criacao por equipe."
         exportHint="Exporte drafts aprovados e notas para governanca de conteudo."
       />
+
+      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
     </div>
   );
 }

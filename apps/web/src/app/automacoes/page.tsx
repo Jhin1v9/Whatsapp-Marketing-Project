@@ -1,4 +1,8 @@
-﻿import { DataOpsPanel } from "../../components/DataOpsPanel";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
 
 const flows = [
@@ -14,6 +18,22 @@ const runs = [
 ] as const;
 
 export default function AutomacoesPage(): JSX.Element {
+  const router = useRouter();
+  const [status, setStatus] = useState("Fluxos prontos para operacao.");
+
+  const onEditFlow = (flowName: string): void => {
+    setStatus(`Fluxo "${flowName}" carregado em modo de edicao.`);
+  };
+
+  const onOpenVersions = (flowName: string): void => {
+    setStatus(`Historico de versoes do fluxo "${flowName}" carregado.`);
+  };
+
+  const onOpenLogs = (flowName: string): void => {
+    router.push("/relatorios");
+    setStatus(`Abrindo logs do fluxo "${flowName}" em Relatorios.`);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -35,9 +55,9 @@ export default function AutomacoesPage(): JSX.Element {
                 <p className="mt-1 text-sm text-slate-300">Trigger: {flow.trigger}</p>
                 <p className="mt-1 text-sm text-slate-300">Acoes: {flow.actions}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Editar</button>
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Versoes</button>
-                  <button className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Logs</button>
+                  <button onClick={() => onEditFlow(flow.name)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Editar</button>
+                  <button onClick={() => onOpenVersions(flow.name)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Versoes</button>
+                  <button onClick={() => onOpenLogs(flow.name)} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs">Logs</button>
                 </div>
               </div>
             ))}
@@ -87,6 +107,8 @@ export default function AutomacoesPage(): JSX.Element {
         importHint="Importe templates de fluxos em JSON para replicar automacoes entre workspaces."
         exportHint="Exporte logs de execucao para auditoria tecnica e troubleshooting."
       />
+
+      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
     </div>
   );
 }
