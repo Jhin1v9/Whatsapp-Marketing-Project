@@ -1,57 +1,34 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
 import { apiBaseUrl } from "../../lib/apiBase";
-import { defaultAppHeaders, getUserPreference, setUserPreference, type JsonValue } from "../../lib/apiClient";
-
-type HealthState = "untested" | "ok" | "error";
-
-type ConnectorHealth = {
-  readonly state: HealthState;
-  readonly detail: string;
-  readonly checkedAt?: string;
-};
-
-type MetaConfig = {
-  readonly appId: string;
-  readonly businessAccountId: string;
-  readonly phoneNumberId: string;
-  readonly verifyToken: string;
-  readonly permanentToken: string;
-  readonly webhookUrl: string;
-};
-
-type InstagramConfig = {
-  readonly appId: string;
-  readonly pageId: string;
-  readonly accessToken: string;
-};
-
-type StripeConfig = {
-  readonly publishableKey: string;
-  readonly secretKey: string;
-  readonly webhookSecret: string;
-};
-
-type GoogleReviewsConfig = {
-  readonly reviewUrl: string;
-};
-
-type GoogleFormsConfig = {
-  readonly endpointUrl: string;
-  readonly webhookSecret: string;
-};
-
-type ProviderKey = "meta_whatsapp" | "instagram" | "stripe" | "google_reviews" | "google_forms";
+import { defaultAppHeaders } from "../../lib/apiClient";
+import {
+  generateRecoveryCode,
+  getVaultMeta,
+  getVaultSummary,
+  recoverAndResetVault,
+  saveVault,
+  setupVault,
+  unlockVault,
+  type ConnectorHealth,
+  type GoogleFormsConfig,
+  type GoogleReviewsConfig,
+  type HealthState,
+  type InstagramConfig,
+  type IntegrationsVaultData,
+  type MetaConfig,
+  type ProviderKey,
+  type StripeConfig,
+} from "../../lib/secureVault";
 
 type IntegrationHealthResponse = {
   readonly provider: ProviderKey;
   readonly ok: boolean;
   readonly checkedAt: string;
   readonly detail: string;
-  readonly httpStatus?: number;
 };
 
 type SecretFieldProps = {
@@ -77,14 +54,6 @@ type SensitiveKey =
   | "stripe_secret_key"
   | "stripe_webhook_secret"
   | "forms_webhook_secret";
-
-const META_PREF_KEY = "integration_meta_config";
-const INSTAGRAM_PREF_KEY = "integration_instagram_config";
-const STRIPE_PREF_KEY = "integration_stripe_config";
-const GOOGLE_REVIEWS_PREF_KEY = "integration_google_reviews_config";
-const GOOGLE_FORMS_PREF_KEY = "integration_google_forms_config";
-const HEALTH_PREF_KEY = "integration_health_state";
-const INTEGRATIONS_EDIT_PASSWORD = process.env.NEXT_PUBLIC_INTEGRATIONS_EDIT_PASSWORD?.trim() || "7741";
 
 const EMPTY_META: MetaConfig = {
   appId: "",
@@ -116,91 +85,13 @@ const EMPTY_GOOGLE_FORMS: GoogleFormsConfig = {
   webhookSecret: "",
 };
 
-function readStringObject<T extends Record<string, string>>(value: JsonValue | null, fallback: T): T {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return fallback;
-  }
-
-  const out = { ...fallback };
-  const record = value as Record<string, JsonValue>;
-
-  for (const key of Object.keys(fallback) as Array<keyof T>) {
-    const raw = record[key as string];
-    if (typeof raw === "string") {
-      out[key] = raw as T[keyof T];
-    }
-  }
-
-  return out;
-}
-
-function parseHealthMap(value: JsonValue | null): Record<ProviderKey, ConnectorHealth> {
-  const empty: Record<ProviderKey, ConnectorHealth> = {
-    meta_whatsapp: { state: "untested", detail: "Sem teste executado" },
-    instagram: { state: "untested", detail: "Sem teste executado" },
-    stripe: { state: "untested", detail: "Sem teste executado" },
-    google_reviews: { state: "untested", detail: "Sem teste executado" },
-    google_forms: { state: "untested", detail: "Sem teste executado" },
-  };
-
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return empty;
-  }
-
-  const record = value as Record<string, JsonValue>;
-
-  for (const key of Object.keys(empty) as ProviderKey[]) {
-    const raw = record[key];
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-      continue;
-    }
-
-    const rawObj = raw as Record<string, JsonValue>;
-    const stateRaw = rawObj.state;
-    const detailRaw = rawObj.detail;
-    const checkedAtRaw = rawObj.checkedAt;
-
-    const state: HealthState = stateRaw === "ok" || stateRaw === "error" || stateRaw === "untested" ? stateRaw : "untested";
-
-    empty[key] = {
-      state,
-      detail: typeof detailRaw === "string" ? detailRaw : "Sem detalhes",
-      ...(typeof checkedAtRaw === "string" ? { checkedAt: checkedAtRaw } : {}),
-    };
-  }
-
-  return empty;
-}
-
-function healthMapToJsonValue(map: Record<ProviderKey, ConnectorHealth>): JsonValue {
-  return {
-    meta_whatsapp: {
-      state: map.meta_whatsapp.state,
-      detail: map.meta_whatsapp.detail,
-      checkedAt: map.meta_whatsapp.checkedAt ?? "",
-    },
-    instagram: {
-      state: map.instagram.state,
-      detail: map.instagram.detail,
-      checkedAt: map.instagram.checkedAt ?? "",
-    },
-    stripe: {
-      state: map.stripe.state,
-      detail: map.stripe.detail,
-      checkedAt: map.stripe.checkedAt ?? "",
-    },
-    google_reviews: {
-      state: map.google_reviews.state,
-      detail: map.google_reviews.detail,
-      checkedAt: map.google_reviews.checkedAt ?? "",
-    },
-    google_forms: {
-      state: map.google_forms.state,
-      detail: map.google_forms.detail,
-      checkedAt: map.google_forms.checkedAt ?? "",
-    },
-  };
-}
+const EMPTY_HEALTH: Record<ProviderKey, ConnectorHealth> = {
+  meta_whatsapp: { state: "untested", detail: "Sem teste executado" },
+  instagram: { state: "untested", detail: "Sem teste executado" },
+  stripe: { state: "untested", detail: "Sem teste executado" },
+  google_reviews: { state: "untested", detail: "Sem teste executado" },
+  google_forms: { state: "untested", detail: "Sem teste executado" },
+};
 
 function SecretField({ value, placeholder, revealed, disabled, onToggle, onChange, className }: SecretFieldProps): JSX.Element {
   return (
@@ -232,12 +123,35 @@ export default function IntegracoesPage(): JSX.Element {
   const [stripe, setStripe] = useState<StripeConfig>(EMPTY_STRIPE);
   const [googleReviews, setGoogleReviews] = useState<GoogleReviewsConfig>(EMPTY_GOOGLE_REVIEWS);
   const [googleForms, setGoogleForms] = useState<GoogleFormsConfig>(EMPTY_GOOGLE_FORMS);
-  const [health, setHealth] = useState<Record<ProviderKey, ConnectorHealth>>(parseHealthMap(null));
-  const [status, setStatus] = useState("Carregando configuracoes...");
+  const [health, setHealth] = useState<Record<ProviderKey, ConnectorHealth>>(EMPTY_HEALTH);
+  const [filledSummary, setFilledSummary] = useState<Record<ProviderKey, boolean>>({
+    meta_whatsapp: false,
+    instagram: false,
+    stripe: false,
+    google_reviews: false,
+    google_forms: false,
+  });
+
+  const [status, setStatus] = useState("Carregando cofre seguro...");
   const [busy, setBusy] = useState(false);
   const [isEditUnlocked, setIsEditUnlocked] = useState(false);
+  const [hasVault, setHasVault] = useState(false);
   const [showUnlockBox, setShowUnlockBox] = useState(false);
+  const [vaultQuestion, setVaultQuestion] = useState("Qual o nome do projeto?");
+  const [sessionPassword, setSessionPassword] = useState("");
   const [unlockPassword, setUnlockPassword] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
+
+  const [setupPassword, setSetupPassword] = useState("");
+  const [setupPasswordConfirm, setSetupPasswordConfirm] = useState("");
+  const [setupAnswer, setSetupAnswer] = useState("");
+  const [setupRecoveryCode, setSetupRecoveryCode] = useState("");
+
+  const [recoverAnswer, setRecoverAnswer] = useState("");
+  const [recoverCode, setRecoverCode] = useState("");
+  const [recoverNewPassword, setRecoverNewPassword] = useState("");
+  const [recoverNewPasswordConfirm, setRecoverNewPasswordConfirm] = useState("");
+
   const [revealed, setRevealed] = useState<Record<SensitiveKey, boolean>>({
     meta_app_id: false,
     meta_ba_id: false,
@@ -260,61 +174,35 @@ export default function IntegracoesPage(): JSX.Element {
     setRevealed((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const hideAllSecrets = (): void => {
-    setRevealed((prev) => {
-      const next = {} as Record<SensitiveKey, boolean>;
-      for (const key of Object.keys(prev) as SensitiveKey[]) {
-        next[key] = false;
-      }
-      return next;
-    });
-  };
-
-  const unlockEditing = (): void => {
-    if (unlockPassword === INTEGRATIONS_EDIT_PASSWORD) {
-      setIsEditUnlocked(true);
-      setShowUnlockBox(false);
-      setUnlockPassword("");
-      setStatus("Edicao de credenciais liberada para esta sessao.");
-      return;
-    }
-
-    setStatus("Senha de edicao invalida.");
-  };
+  const buildVaultData = (nextHealth?: Record<ProviderKey, ConnectorHealth>): IntegrationsVaultData => ({
+    meta,
+    instagram,
+    stripe,
+    googleReviews,
+    googleForms,
+    health: nextHealth ?? health,
+  });
 
   useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
-        const [metaPref, instagramPref, stripePref, reviewsPref, formsPref, healthPref] = await Promise.all([
-          getUserPreference(META_PREF_KEY),
-          getUserPreference(INSTAGRAM_PREF_KEY),
-          getUserPreference(STRIPE_PREF_KEY),
-          getUserPreference(GOOGLE_REVIEWS_PREF_KEY),
-          getUserPreference(GOOGLE_FORMS_PREF_KEY),
-          getUserPreference(HEALTH_PREF_KEY),
-        ]);
+    const metadata = getVaultMeta();
+    const summary = getVaultSummary();
 
-        const resolvedMeta = readStringObject(metaPref, EMPTY_META);
-        const resolvedInstagram = readStringObject(instagramPref, EMPTY_INSTAGRAM);
-        const resolvedStripe = readStringObject(stripePref, EMPTY_STRIPE);
-        const resolvedReviews = readStringObject(reviewsPref, EMPTY_GOOGLE_REVIEWS);
-        const resolvedForms = readStringObject(formsPref, EMPTY_GOOGLE_FORMS);
-        const resolvedHealth = parseHealthMap(healthPref);
-
-        setMeta({ ...resolvedMeta, webhookUrl: resolvedMeta.webhookUrl || callbackUrl });
-        setInstagram(resolvedInstagram);
-        setStripe(resolvedStripe);
-        setGoogleReviews(resolvedReviews);
-        setGoogleForms(resolvedForms);
-        setHealth(resolvedHealth);
-        setStatus("Configuracoes carregadas.");
-      } catch (error) {
-        setStatus(`Falha ao carregar configuracoes no backend: ${String(error)}`);
+    if (metadata.hasVault) {
+      setHasVault(true);
+      if (metadata.question) {
+        setVaultQuestion(metadata.question);
       }
-    };
+      setStatus("Cofre detectado. Clique em Editar credenciais e informe sua senha.");
+    } else {
+      setStatus("Como e sua primeira vez acessando, informe sua senha para criar o cofre seguro.");
+      setShowUnlockBox(true);
+    }
 
-    void load();
-  }, [callbackUrl]);
+    if (summary) {
+      setHealth(summary.health);
+      setFilledSummary(summary.filled);
+    }
+  }, []);
 
   const filled = {
     meta_whatsapp: Boolean(meta.appId && meta.businessAccountId && meta.phoneNumberId && meta.verifyToken && meta.permanentToken && meta.webhookUrl),
@@ -324,7 +212,9 @@ export default function IntegracoesPage(): JSX.Element {
     google_forms: Boolean(googleForms.endpointUrl),
   } satisfies Record<ProviderKey, boolean>;
 
-  const runHealthcheck = async (provider: ProviderKey): Promise<boolean> => {
+  const effectiveFilled = isEditUnlocked ? filled : filledSummary;
+
+  const runHealthcheck = async (provider: ProviderKey): Promise<{ readonly ok: boolean; readonly map: Record<ProviderKey, ConnectorHealth> }> => {
     const payloadByProvider: Record<ProviderKey, Record<string, string>> = {
       meta_whatsapp: {
         appId: meta.appId,
@@ -364,64 +254,82 @@ export default function IntegracoesPage(): JSX.Element {
         const rawDetail = await response.text();
         const detail = rawDetail && rawDetail.trim().length > 0 ? rawDetail : `Teste falhou: ${response.status}`;
 
-        setHealth((prev) => ({
-          ...prev,
+        const map = {
+          ...health,
           [provider]: {
-            state: "error",
+            state: "error" as HealthState,
             detail,
             checkedAt: new Date().toISOString(),
           },
-        }));
+        };
+
+        setHealth(map);
         setStatus(`Falha no healthcheck de ${provider}: ${detail}`);
-        return false;
+        return { ok: false, map };
       }
 
       const result = (await response.json()) as IntegrationHealthResponse;
-      const nextHealth: ConnectorHealth = {
-        state: result.ok ? "ok" : "error",
-        detail: result.detail,
-        checkedAt: result.checkedAt,
-      };
-
-      const nextMap = {
+      const map = {
         ...health,
-        [provider]: nextHealth,
+        [provider]: {
+          state: result.ok ? "ok" : "error",
+          detail: result.detail,
+          checkedAt: result.checkedAt,
+        },
       };
 
-      setHealth(nextMap);
-      await setUserPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
+      setHealth(map);
       setStatus(`Healthcheck de ${provider}: ${result.ok ? "OK" : "ERRO"} - ${result.detail}`);
-      return result.ok;
+      return { ok: result.ok, map };
     } catch (error) {
+      const map = {
+        ...health,
+        [provider]: {
+          state: "error" as HealthState,
+          detail: `Erro de rede: ${String(error)}`,
+          checkedAt: new Date().toISOString(),
+        },
+      };
+      setHealth(map);
       setStatus(`Erro no healthcheck de ${provider}: ${String(error)}`);
-      return false;
+      return { ok: false, map };
     }
   };
 
+  const persistEncrypted = async (nextHealth?: Record<ProviderKey, ConnectorHealth>): Promise<void> => {
+    if (!sessionPassword) {
+      throw new Error("Sessao de edicao expirada. Desbloqueie novamente.");
+    }
+
+    const data = buildVaultData(nextHealth);
+    await saveVault(sessionPassword, data);
+    setFilledSummary({
+      meta_whatsapp: Boolean(data.meta.appId && data.meta.businessAccountId && data.meta.phoneNumberId && data.meta.verifyToken && data.meta.permanentToken && data.meta.webhookUrl),
+      instagram: Boolean(data.instagram.appId && data.instagram.pageId && data.instagram.accessToken),
+      stripe: Boolean(data.stripe.publishableKey && data.stripe.secretKey && data.stripe.webhookSecret),
+      google_reviews: Boolean(data.googleReviews.reviewUrl),
+      google_forms: Boolean(data.googleForms.endpointUrl),
+    });
+  };
+
   const saveProvider = async (provider: ProviderKey): Promise<void> => {
-    if (!isEditUnlocked && provider !== "google_reviews") {
-      setStatus("Credenciais bloqueadas. Clique em Editar e informe a senha para salvar alteracoes.");
+    if (!isEditUnlocked) {
+      setStatus("Credenciais bloqueadas. Clique em Editar credenciais.");
       return;
     }
 
     setBusy(true);
-    setStatus(`Salvando configuracao de ${provider}...`);
+    setStatus(`Salvando configuracao de ${provider} no cofre seguro...`);
 
     try {
-      if (provider === "meta_whatsapp") await setUserPreference(META_PREF_KEY, meta);
-      if (provider === "instagram") await setUserPreference(INSTAGRAM_PREF_KEY, instagram);
-      if (provider === "stripe") await setUserPreference(STRIPE_PREF_KEY, stripe);
-      if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
-      if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
-
-      hideAllSecrets();
-      setStatus(`Configuracao de ${provider} salva. Validando...`);
-      const ok = await runHealthcheck(provider);
-      if (!ok) {
-        setStatus(`Configuracao salva, mas validacao falhou para ${provider}. Veja o erro no card.`);
+      await persistEncrypted();
+      const result = await runHealthcheck(provider);
+      await persistEncrypted(result.map);
+      if (!result.ok) {
+        setStatus(`Configuracao salva no cofre, mas validacao falhou para ${provider}.`);
       }
     } catch (error) {
-      setStatus(`Erro ao salvar ${provider} no backend: ${String(error)}`);
+      setStatus(`Erro ao salvar ${provider}: ${String(error)}`);
     } finally {
       setBusy(false);
     }
@@ -429,22 +337,145 @@ export default function IntegracoesPage(): JSX.Element {
 
   const testProvider = async (provider: ProviderKey): Promise<void> => {
     setBusy(true);
-    await runHealthcheck(provider);
+    const result = await runHealthcheck(provider);
+    if (isEditUnlocked) {
+      try {
+        await persistEncrypted(result.map);
+      } catch (error) {
+        setStatus(`Healthcheck executado, mas falhou ao persistir cofre: ${String(error)}`);
+      }
+    }
     setBusy(false);
+  };
+
+  const createFirstVault = async (): Promise<void> => {
+    if (setupPassword.length < 4) {
+      setStatus("Senha inicial precisa ter pelo menos 4 caracteres.");
+      return;
+    }
+    if (setupPassword !== setupPasswordConfirm) {
+      setStatus("Confirmacao de senha nao confere.");
+      return;
+    }
+    if (!setupAnswer.trim()) {
+      setStatus("Informe a resposta de seguranca.");
+      return;
+    }
+    if (!setupRecoveryCode.trim()) {
+      setStatus("Gere e guarde o codigo de recuperacao.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      await setupVault({
+        password: setupPassword,
+        question: vaultQuestion,
+        answer: setupAnswer,
+        recoveryCode: setupRecoveryCode,
+        data: buildVaultData(),
+      });
+
+      setSessionPassword(setupPassword);
+      setIsEditUnlocked(true);
+      setHasVault(true);
+      setShowUnlockBox(false);
+      setStatus("Cofre seguro criado com sucesso. Credenciais liberadas.");
+    } catch (error) {
+      setStatus(`Falha ao criar cofre: ${String(error)}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const unlockExistingVault = async (): Promise<void> => {
+    if (!unlockPassword.trim()) {
+      setStatus("Informe a senha de edicao.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const data = await unlockVault(unlockPassword);
+      setMeta(data.meta);
+      setInstagram(data.instagram);
+      setStripe(data.stripe);
+      setGoogleReviews(data.googleReviews);
+      setGoogleForms(data.googleForms);
+      setHealth(data.health);
+      setSessionPassword(unlockPassword);
+      setIsEditUnlocked(true);
+      setShowUnlockBox(false);
+      setStatus("Cofre desbloqueado. Edicao liberada.");
+    } catch (error) {
+      setStatus(String(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const recoverVault = async (): Promise<void> => {
+    if (!recoverAnswer.trim() || !recoverCode.trim()) {
+      setStatus("Informe resposta e codigo de recuperacao.");
+      return;
+    }
+    if (recoverNewPassword.length < 4) {
+      setStatus("Nova senha precisa ter pelo menos 4 caracteres.");
+      return;
+    }
+    if (recoverNewPassword !== recoverNewPasswordConfirm) {
+      setStatus("Confirmacao da nova senha nao confere.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const nextData: IntegrationsVaultData = {
+        meta: EMPTY_META,
+        instagram: EMPTY_INSTAGRAM,
+        stripe: EMPTY_STRIPE,
+        googleReviews: EMPTY_GOOGLE_REVIEWS,
+        googleForms: EMPTY_GOOGLE_FORMS,
+        health: EMPTY_HEALTH,
+      };
+
+      await recoverAndResetVault({
+        answer: recoverAnswer,
+        recoveryCode: recoverCode,
+        newPassword: recoverNewPassword,
+        question: vaultQuestion,
+        data: nextData,
+      });
+
+      setSessionPassword(recoverNewPassword);
+      setMeta(EMPTY_META);
+      setInstagram(EMPTY_INSTAGRAM);
+      setStripe(EMPTY_STRIPE);
+      setGoogleReviews(EMPTY_GOOGLE_REVIEWS);
+      setGoogleForms(EMPTY_GOOGLE_FORMS);
+      setHealth(EMPTY_HEALTH);
+      setIsEditUnlocked(true);
+      setShowForgot(false);
+      setStatus("Senha redefinida com sucesso. Cofre foi resetado por seguranca.");
+    } catch (error) {
+      setStatus(`Falha na recuperacao: ${String(error)}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const statusBadge = (provider: ProviderKey): JSX.Element => {
     const item = health[provider];
     if (item.state === "ok") return <span className="badge-ok">Configurado</span>;
     if (item.state === "error") return <span className="badge-danger">Erro</span>;
-    return filled[provider] ? <span className="badge-warn">Pendente validacao</span> : <span className="badge-warn">Nao configurado</span>;
+    return effectiveFilled[provider] ? <span className="badge-warn">Pendente validacao</span> : <span className="badge-warn">Nao configurado</span>;
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Integracoes da Plataforma"
-        subtitle="Sem dados falsos: cada conector mostra estado de configuracao e validacao real por healthcheck."
+        subtitle="Cofre local criptografado: sem Redis externo e sem expor chaves em texto puro."
         actions={["Atualizar inbox"]}
       />
 
@@ -472,7 +503,7 @@ export default function IntegracoesPage(): JSX.Element {
                 <p className="mt-1 text-sm text-slate-300">{health[key].detail}</p>
                 <p className="mt-1 text-xs text-slate-400">Ultimo check: {health[key].checkedAt ? new Date(health[key].checkedAt).toLocaleString() : "nunca"}</p>
                 <div className="mt-2 flex gap-2">
-                  <button onClick={() => void saveProvider(key)} disabled={busy || (!isEditUnlocked && key !== "google_reviews")} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs disabled:opacity-60">Salvar</button>
+                  <button onClick={() => void saveProvider(key)} disabled={busy || !isEditUnlocked} className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs disabled:opacity-60">Salvar</button>
                   <button onClick={() => void testProvider(key)} disabled={busy} className="rounded-md border border-accent/40 bg-accent/10 px-2 py-1 text-xs text-accent disabled:opacity-60">Healthcheck</button>
                 </div>
               </div>
@@ -498,25 +529,49 @@ export default function IntegracoesPage(): JSX.Element {
           </div>
 
           {showUnlockBox ? (
-            <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-              <p className="mb-2 text-sm text-slate-300">Informe a senha para liberar edicao nesta sessao.</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="password"
-                  value={unlockPassword}
-                  onChange={(event) => setUnlockPassword(event.target.value)}
-                  placeholder="Senha de edicao"
-                  autoComplete="off"
-                  className="w-64 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={unlockEditing}
-                  className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent"
-                >
-                  Liberar
-                </button>
-              </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-3 space-y-3">
+              {!hasVault ? (
+                <>
+                  <p className="text-sm text-slate-300">Como e sua primeira vez acessando, informe sua senha para criar o cofre seguro.</p>
+                  <input value={vaultQuestion} onChange={(e) => setVaultQuestion(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Pergunta de seguranca" />
+                  <input type="password" value={setupPassword} onChange={(e) => setSetupPassword(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Senha de edicao" />
+                  <input type="password" value={setupPasswordConfirm} onChange={(e) => setSetupPasswordConfirm(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Confirmar senha" />
+                  <input value={setupAnswer} onChange={(e) => setSetupAnswer(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Resposta da pergunta de seguranca" />
+                  <div className="flex gap-2">
+                    <input value={setupRecoveryCode} readOnly className="flex-1 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Codigo de recuperacao" />
+                    <button type="button" onClick={() => setSetupRecoveryCode(generateRecoveryCode())} className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs">Gerar codigo</button>
+                  </div>
+                  <button type="button" onClick={() => void createFirstVault()} disabled={busy} className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent disabled:opacity-60">Criar cofre</button>
+                </>
+              ) : (
+                <>
+                  {!showForgot ? (
+                    <>
+                      <p className="text-sm text-slate-300">Informe sua senha para liberar a edicao.</p>
+                      <input type="password" value={unlockPassword} onChange={(e) => setUnlockPassword(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Senha de edicao" />
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => void unlockExistingVault()} disabled={busy} className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent disabled:opacity-60">Liberar</button>
+                        <button type="button" onClick={() => setShowForgot(true)} className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs">Esqueci a senha</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-300">Recuperacao segura: responda a pergunta e informe codigo de recuperacao.</p>
+                      <div className="rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-slate-300">
+                        Pergunta: <strong>{vaultQuestion}</strong>
+                      </div>
+                      <input value={recoverAnswer} onChange={(e) => setRecoverAnswer(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Resposta de seguranca" />
+                      <input value={recoverCode} onChange={(e) => setRecoverCode(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Codigo de recuperacao" />
+                      <input type="password" value={recoverNewPassword} onChange={(e) => setRecoverNewPassword(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Nova senha" />
+                      <input type="password" value={recoverNewPasswordConfirm} onChange={(e) => setRecoverNewPasswordConfirm(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Confirmar nova senha" />
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => void recoverVault()} disabled={busy} className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent disabled:opacity-60">Redefinir senha</button>
+                        <button type="button" onClick={() => setShowForgot(false)} className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs">Cancelar</button>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           ) : null}
 
@@ -555,7 +610,7 @@ export default function IntegracoesPage(): JSX.Element {
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Google Reviews</p>
-            <input value={googleReviews.reviewUrl} onChange={(event) => setGoogleReviews({ reviewUrl: event.target.value })} placeholder="URL de avaliacao publica" className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
+            <input value={googleReviews.reviewUrl} onChange={(event) => setGoogleReviews({ reviewUrl: event.target.value })} disabled={!isEditUnlocked} placeholder="URL de avaliacao publica" className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
