@@ -54,6 +54,29 @@ type IntegrationHealthResponse = {
   readonly httpStatus?: number;
 };
 
+type SecretFieldProps = {
+  readonly value: string;
+  readonly placeholder: string;
+  readonly revealed: boolean;
+  readonly onToggle: () => void;
+  readonly onChange: (value: string) => void;
+  readonly className?: string;
+};
+
+type SensitiveKey =
+  | "meta_app_id"
+  | "meta_ba_id"
+  | "meta_phone_id"
+  | "meta_verify_token"
+  | "meta_permanent_token"
+  | "instagram_app_id"
+  | "instagram_page_id"
+  | "instagram_access_token"
+  | "stripe_publishable_key"
+  | "stripe_secret_key"
+  | "stripe_webhook_secret"
+  | "forms_webhook_secret";
+
 const META_PREF_KEY = "integration_meta_config";
 const INSTAGRAM_PREF_KEY = "integration_instagram_config";
 const STRIPE_PREF_KEY = "integration_stripe_config";
@@ -177,6 +200,28 @@ function healthMapToJsonValue(map: Record<ProviderKey, ConnectorHealth>): JsonVa
   };
 }
 
+function SecretField({ value, placeholder, revealed, onToggle, onChange, className }: SecretFieldProps): JSX.Element {
+  return (
+    <div className={`flex items-center gap-2 ${className ?? ""}`}>
+      <input
+        type={revealed ? "text" : "password"}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        autoComplete="off"
+        className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs"
+      >
+        {revealed ? "Ocultar" : "Ver"}
+      </button>
+    </div>
+  );
+}
+
 export default function IntegracoesPage(): JSX.Element {
   const [meta, setMeta] = useState<MetaConfig>(EMPTY_META);
   const [instagram, setInstagram] = useState<InstagramConfig>(EMPTY_INSTAGRAM);
@@ -186,8 +231,36 @@ export default function IntegracoesPage(): JSX.Element {
   const [health, setHealth] = useState<Record<ProviderKey, ConnectorHealth>>(parseHealthMap(null));
   const [status, setStatus] = useState("Carregando configuracoes...");
   const [busy, setBusy] = useState(false);
+  const [revealed, setRevealed] = useState<Record<SensitiveKey, boolean>>({
+    meta_app_id: false,
+    meta_ba_id: false,
+    meta_phone_id: false,
+    meta_verify_token: false,
+    meta_permanent_token: false,
+    instagram_app_id: false,
+    instagram_page_id: false,
+    instagram_access_token: false,
+    stripe_publishable_key: false,
+    stripe_secret_key: false,
+    stripe_webhook_secret: false,
+    forms_webhook_secret: false,
+  });
 
   const callbackUrl = useMemo(() => `${apiBaseUrl()}/integrations/meta/webhook`, []);
+
+  const toggleReveal = (key: SensitiveKey): void => {
+    setRevealed((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const hideAllSecrets = (): void => {
+    setRevealed((prev) => {
+      const next = {} as Record<SensitiveKey, boolean>;
+      for (const key of Object.keys(prev) as SensitiveKey[]) {
+        next[key] = false;
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const load = async (): Promise<void> => {
@@ -207,6 +280,7 @@ export default function IntegracoesPage(): JSX.Element {
         setGoogleReviews(readStringObject(reviewsPref, EMPTY_GOOGLE_REVIEWS));
         setGoogleForms(readStringObject(formsPref, EMPTY_GOOGLE_FORMS));
         setHealth(parseHealthMap(healthPref));
+        setMeta((prev) => ({ ...prev, webhookUrl: prev.webhookUrl || callbackUrl }));
         setStatus("Configuracoes carregadas.");
       } catch (error) {
         setStatus(`Falha ao carregar configuracoes: ${String(error)}`);
@@ -234,6 +308,7 @@ export default function IntegracoesPage(): JSX.Element {
       if (provider === "stripe") await setUserPreference(STRIPE_PREF_KEY, stripe);
       if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
       if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
+      hideAllSecrets();
       setStatus(`Configuracao de ${provider} salva.`);
     } catch (error) {
       setStatus(`Erro ao salvar ${provider}: ${String(error)}`);
@@ -360,12 +435,12 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Meta WhatsApp Cloud API</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <input value={meta.appId} onChange={(event) => setMeta((prev) => ({ ...prev, appId: event.target.value }))} placeholder="App ID" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={meta.businessAccountId} onChange={(event) => setMeta((prev) => ({ ...prev, businessAccountId: event.target.value }))} placeholder="Business Account ID" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={meta.phoneNumberId} onChange={(event) => setMeta((prev) => ({ ...prev, phoneNumberId: event.target.value }))} placeholder="Phone Number ID" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={meta.verifyToken} onChange={(event) => setMeta((prev) => ({ ...prev, verifyToken: event.target.value }))} placeholder="Verify Token" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
+              <SecretField value={meta.appId} placeholder="App ID" revealed={revealed.meta_app_id} onToggle={() => toggleReveal("meta_app_id")} onChange={(value) => setMeta((prev) => ({ ...prev, appId: value }))} />
+              <SecretField value={meta.businessAccountId} placeholder="Business Account ID" revealed={revealed.meta_ba_id} onToggle={() => toggleReveal("meta_ba_id")} onChange={(value) => setMeta((prev) => ({ ...prev, businessAccountId: value }))} />
+              <SecretField value={meta.phoneNumberId} placeholder="Phone Number ID" revealed={revealed.meta_phone_id} onToggle={() => toggleReveal("meta_phone_id")} onChange={(value) => setMeta((prev) => ({ ...prev, phoneNumberId: value }))} />
+              <SecretField value={meta.verifyToken} placeholder="Verify Token" revealed={revealed.meta_verify_token} onToggle={() => toggleReveal("meta_verify_token")} onChange={(value) => setMeta((prev) => ({ ...prev, verifyToken: value }))} />
               <input value={meta.webhookUrl} onChange={(event) => setMeta((prev) => ({ ...prev, webhookUrl: event.target.value }))} placeholder="Webhook URL publico" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm md:col-span-2" />
-              <textarea value={meta.permanentToken} onChange={(event) => setMeta((prev) => ({ ...prev, permanentToken: event.target.value }))} placeholder="Permanent Token" className="min-h-20 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm md:col-span-2" />
+              <SecretField value={meta.permanentToken} placeholder="Permanent Token" revealed={revealed.meta_permanent_token} onToggle={() => toggleReveal("meta_permanent_token")} onChange={(value) => setMeta((prev) => ({ ...prev, permanentToken: value }))} className="md:col-span-2" />
             </div>
             <div className="mt-2 rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-slate-300">
               Callback interno da API: <strong>{callbackUrl}</strong>
@@ -375,18 +450,18 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Instagram Messaging</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <input value={instagram.appId} onChange={(event) => setInstagram((prev) => ({ ...prev, appId: event.target.value }))} placeholder="App ID" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={instagram.pageId} onChange={(event) => setInstagram((prev) => ({ ...prev, pageId: event.target.value }))} placeholder="Page/IG Business ID" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <textarea value={instagram.accessToken} onChange={(event) => setInstagram((prev) => ({ ...prev, accessToken: event.target.value }))} placeholder="Access Token" className="min-h-20 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm md:col-span-2" />
+              <SecretField value={instagram.appId} placeholder="App ID" revealed={revealed.instagram_app_id} onToggle={() => toggleReveal("instagram_app_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, appId: value }))} />
+              <SecretField value={instagram.pageId} placeholder="Page/IG Business ID" revealed={revealed.instagram_page_id} onToggle={() => toggleReveal("instagram_page_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, pageId: value }))} />
+              <SecretField value={instagram.accessToken} placeholder="Access Token" revealed={revealed.instagram_access_token} onToggle={() => toggleReveal("instagram_access_token")} onChange={(value) => setInstagram((prev) => ({ ...prev, accessToken: value }))} className="md:col-span-2" />
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Stripe Billing</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <input value={stripe.publishableKey} onChange={(event) => setStripe((prev) => ({ ...prev, publishableKey: event.target.value }))} placeholder="Publishable Key" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={stripe.webhookSecret} onChange={(event) => setStripe((prev) => ({ ...prev, webhookSecret: event.target.value }))} placeholder="Webhook Secret" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <textarea value={stripe.secretKey} onChange={(event) => setStripe((prev) => ({ ...prev, secretKey: event.target.value }))} placeholder="Secret Key" className="min-h-20 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm md:col-span-2" />
+              <SecretField value={stripe.publishableKey} placeholder="Publishable Key" revealed={revealed.stripe_publishable_key} onToggle={() => toggleReveal("stripe_publishable_key")} onChange={(value) => setStripe((prev) => ({ ...prev, publishableKey: value }))} />
+              <SecretField value={stripe.webhookSecret} placeholder="Webhook Secret" revealed={revealed.stripe_webhook_secret} onToggle={() => toggleReveal("stripe_webhook_secret")} onChange={(value) => setStripe((prev) => ({ ...prev, webhookSecret: value }))} />
+              <SecretField value={stripe.secretKey} placeholder="Secret Key" revealed={revealed.stripe_secret_key} onToggle={() => toggleReveal("stripe_secret_key")} onChange={(value) => setStripe((prev) => ({ ...prev, secretKey: value }))} className="md:col-span-2" />
             </div>
           </div>
 
@@ -399,7 +474,7 @@ export default function IntegracoesPage(): JSX.Element {
             <p className="mb-2 font-semibold">Google Forms</p>
             <div className="grid gap-2 md:grid-cols-2">
               <input value={googleForms.endpointUrl} onChange={(event) => setGoogleForms((prev) => ({ ...prev, endpointUrl: event.target.value }))} placeholder="Endpoint Apps Script / webhook" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
-              <input value={googleForms.webhookSecret} onChange={(event) => setGoogleForms((prev) => ({ ...prev, webhookSecret: event.target.value }))} placeholder="Webhook Secret" className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" />
+              <SecretField value={googleForms.webhookSecret} placeholder="Webhook Secret" revealed={revealed.forms_webhook_secret} onToggle={() => toggleReveal("forms_webhook_secret")} onChange={(value) => setGoogleForms((prev) => ({ ...prev, webhookSecret: value }))} />
             </div>
           </div>
         </article>
