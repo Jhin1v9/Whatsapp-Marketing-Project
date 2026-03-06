@@ -1,0 +1,18 @@
+{
+  "name": "whatsapp-bot-marketing-auto",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run --workspaces typecheck",
+    "lint": "npm run --workspaces lint",
+    "dev": "npm run --workspaces dev",
+    "build": "npm run --workspaces build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

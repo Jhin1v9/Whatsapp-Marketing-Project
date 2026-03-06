@@ -1,0 +1,163 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  background:
+    radial-gradient(1200px 700px at 10% -10%, rgba(59, 130, 246, 0.14), transparent 55%),
+    radial-gradient(1000px 600px at 100% 0%, rgba(30, 64, 175, 0.1), transparent 50%),
+    #0b1220;
+  color: #e2e8f0;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+html[data-theme="light"] body {
+  background:
+    radial-gradient(1200px 700px at 10% -10%, rgba(37, 99, 235, 0.08), transparent 55%),
+    radial-gradient(1000px 600px at 100% 0%, rgba(14, 116, 144, 0.08), transparent 50%),
+    #f4f7fb;
+  color: #0f172a;
+}
+
+@keyframes enterUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-shell {
+  @apply min-h-screen w-full gap-4 p-4 md:grid md:grid-cols-[280px_1fr] md:p-6;
+}
+
+.sidebar {
+  @apply rounded-3xl border border-slate-300/15 bg-panel/75 p-4 backdrop-blur md:sticky md:top-6 md:h-[calc(100vh-3rem)] md:overflow-y-auto;
+}
+
+.app-content {
+  @apply space-y-4;
+}
+
+.topbar {
+  @apply flex flex-col gap-3 rounded-3xl border border-slate-300/15 bg-panel/65 p-4 backdrop-blur md:flex-row md:items-center md:justify-between;
+}
+
+.topbar-left {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.topbar-actions {
+  @apply flex flex-wrap gap-2;
+}
+
+.topbar-search-wrap {
+  @apply min-w-[260px] flex-1;
+}
+
+.topbar-search {
+  @apply w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none transition focus:border-accent/60;
+}
+
+.global-filters {
+  @apply flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300/15 bg-panel/60 p-3;
+}
+
+.filter-select {
+  @apply rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm;
+}
+
+.filter-chip {
+  @apply rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs;
+}
+
+.current-page-chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold;
+}
+
+.nav-section-title {
+  @apply px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400;
+}
+
+.nav-item {
+  @apply block rounded-xl border border-slate-300/15 bg-slate-900/35 p-3 transition hover:border-accent/40 hover:bg-accent/10;
+}
+
+.nav-item-active {
+  @apply border-accent/60 bg-accent/15;
+}
+
+.nav-item-row {
+  @apply flex items-start gap-2;
+}
+
+.nav-icon {
+  @apply mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-sm;
+}
+
+.nav-badge {
+  @apply inline-flex rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] text-accent;
+}
+
+.quick-action {
+  @apply rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-xs font-semibold transition hover:border-accent/40 hover:bg-accent/10;
+}
+
+.card-grid {
+  @apply grid gap-4 md:grid-cols-2 2xl:grid-cols-3;
+}
+
+.kpi-card {
+  @apply rounded-2xl border border-slate-300/15 bg-panel/85 p-4 backdrop-blur shadow-glow transition hover:-translate-y-0.5 hover:border-accent/35;
+  animation: enterUp 260ms ease-out;
+}
+
+.section-card {
+  @apply rounded-2xl border border-slate-300/15 bg-panel/75 p-5 backdrop-blur transition hover:border-white/25;
+  animation: enterUp 300ms ease-out;
+}
+
+.badge-ok {
+  @apply inline-flex rounded-full border border-accent2/50 bg-accent2/10 px-2 py-0.5 text-xs text-accent2;
+}
+
+.badge-warn {
+  @apply inline-flex rounded-full border border-warning/50 bg-warning/10 px-2 py-0.5 text-xs text-warning;
+}
+
+.badge-danger {
+  @apply inline-flex rounded-full border border-danger/50 bg-danger/10 px-2 py-0.5 text-xs text-danger;
+}
+
+html[data-theme="light"] .sidebar,
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .section-card,
+html[data-theme="light"] .kpi-card,
+html[data-theme="light"] .global-filters {
+  @apply border-slate-300/80 bg-white/90 text-slate-900;
+}
+
+html[data-theme="light"] .nav-item,
+html[data-theme="light"] .quick-action,
+html[data-theme="light"] .filter-select,
+html[data-theme="light"] .topbar-search,
+html[data-theme="light"] .current-page-chip {
+  @apply border-slate-300/70 bg-slate-50 text-slate-900;
+}
+
+html[data-theme="light"] .text-slate-300,
+html[data-theme="light"] .text-slate-400 {
+  @apply text-slate-600;
+}
