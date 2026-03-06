@@ -316,7 +316,7 @@ export default function IntegracoesPage(): JSX.Element {
     void load();
   }, [callbackUrl]);
 
-  const configured = {
+  const filled = {
     meta_whatsapp: Boolean(meta.appId && meta.businessAccountId && meta.phoneNumberId && meta.verifyToken && meta.permanentToken && meta.webhookUrl),
     instagram: Boolean(instagram.appId && instagram.pageId && instagram.accessToken),
     stripe: Boolean(stripe.publishableKey && stripe.secretKey && stripe.webhookSecret),
@@ -324,42 +324,15 @@ export default function IntegracoesPage(): JSX.Element {
     google_forms: Boolean(googleForms.endpointUrl),
   } satisfies Record<ProviderKey, boolean>;
 
-  const saveProvider = async (provider: ProviderKey): Promise<void> => {
-    if (!isEditUnlocked && provider !== "google_reviews") {
-      setStatus("Credenciais bloqueadas. Clique em Editar e informe a senha para salvar alteracoes.");
-      return;
-    }
-
-    setBusy(true);
-    setStatus(`Salvando configuracao de ${provider}...`);
-
-    try {
-      if (provider === "meta_whatsapp") await setUserPreference(META_PREF_KEY, meta);
-      if (provider === "instagram") await setUserPreference(INSTAGRAM_PREF_KEY, instagram);
-      if (provider === "stripe") await setUserPreference(STRIPE_PREF_KEY, stripe);
-      if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
-      if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
-      hideAllSecrets();
-      setStatus(`Configuracao de ${provider} salva no backend.`);
-    } catch (error) {
-      setStatus(`Erro ao salvar ${provider} no backend: ${String(error)}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const testProvider = async (provider: ProviderKey): Promise<void> => {
-    setBusy(true);
-    setStatus(`Executando healthcheck de ${provider}...`);
-
-      const payloadByProvider: Record<ProviderKey, Record<string, string>> = {
-        meta_whatsapp: {
-          appId: meta.appId,
-          verifyToken: meta.verifyToken,
-          phoneNumberId: meta.phoneNumberId,
-          permanentToken: meta.permanentToken,
-          webhookUrl: meta.webhookUrl || callbackUrl,
-        },
+  const runHealthcheck = async (provider: ProviderKey): Promise<boolean> => {
+    const payloadByProvider: Record<ProviderKey, Record<string, string>> = {
+      meta_whatsapp: {
+        appId: meta.appId,
+        verifyToken: meta.verifyToken,
+        phoneNumberId: meta.phoneNumberId,
+        permanentToken: meta.permanentToken,
+        webhookUrl: meta.webhookUrl || callbackUrl,
+      },
       instagram: {
         appId: instagram.appId,
         accessToken: instagram.accessToken,
@@ -375,6 +348,8 @@ export default function IntegracoesPage(): JSX.Element {
       },
     };
 
+    setStatus(`Executando healthcheck de ${provider}...`);
+
     try {
       const response = await fetch(`${apiBaseUrl()}/integrations/health/${provider}`, {
         method: "POST",
@@ -386,16 +361,19 @@ export default function IntegracoesPage(): JSX.Element {
       });
 
       if (!response.ok) {
+        const rawDetail = await response.text();
+        const detail = rawDetail && rawDetail.trim().length > 0 ? rawDetail : `Teste falhou: ${response.status}`;
+
         setHealth((prev) => ({
           ...prev,
           [provider]: {
             state: "error",
-            detail: `Teste falhou: ${response.status}`,
+            detail,
             checkedAt: new Date().toISOString(),
           },
         }));
-        setStatus(`Falha no healthcheck de ${provider}: ${await response.text()}`);
-        return;
+        setStatus(`Falha no healthcheck de ${provider}: ${detail}`);
+        return false;
       }
 
       const result = (await response.json()) as IntegrationHealthResponse;
@@ -412,19 +390,54 @@ export default function IntegracoesPage(): JSX.Element {
 
       setHealth(nextMap);
       await setUserPreference(HEALTH_PREF_KEY, healthMapToJsonValue(nextMap));
-      setStatus(`Healthcheck de ${provider}: ${result.ok ? "OK" : "ERRO"}.`);
+      setStatus(`Healthcheck de ${provider}: ${result.ok ? "OK" : "ERRO"} - ${result.detail}`);
+      return result.ok;
     } catch (error) {
       setStatus(`Erro no healthcheck de ${provider}: ${String(error)}`);
+      return false;
+    }
+  };
+
+  const saveProvider = async (provider: ProviderKey): Promise<void> => {
+    if (!isEditUnlocked && provider !== "google_reviews") {
+      setStatus("Credenciais bloqueadas. Clique em Editar e informe a senha para salvar alteracoes.");
+      return;
+    }
+
+    setBusy(true);
+    setStatus(`Salvando configuracao de ${provider}...`);
+
+    try {
+      if (provider === "meta_whatsapp") await setUserPreference(META_PREF_KEY, meta);
+      if (provider === "instagram") await setUserPreference(INSTAGRAM_PREF_KEY, instagram);
+      if (provider === "stripe") await setUserPreference(STRIPE_PREF_KEY, stripe);
+      if (provider === "google_reviews") await setUserPreference(GOOGLE_REVIEWS_PREF_KEY, googleReviews);
+      if (provider === "google_forms") await setUserPreference(GOOGLE_FORMS_PREF_KEY, googleForms);
+
+      hideAllSecrets();
+      setStatus(`Configuracao de ${provider} salva. Validando...`);
+      const ok = await runHealthcheck(provider);
+      if (!ok) {
+        setStatus(`Configuracao salva, mas validacao falhou para ${provider}. Veja o erro no card.`);
+      }
+    } catch (error) {
+      setStatus(`Erro ao salvar ${provider} no backend: ${String(error)}`);
     } finally {
       setBusy(false);
     }
   };
 
+  const testProvider = async (provider: ProviderKey): Promise<void> => {
+    setBusy(true);
+    await runHealthcheck(provider);
+    setBusy(false);
+  };
+
   const statusBadge = (provider: ProviderKey): JSX.Element => {
     const item = health[provider];
-    if (item.state === "ok") return <span className="badge-ok">Validado</span>;
+    if (item.state === "ok") return <span className="badge-ok">Configurado</span>;
     if (item.state === "error") return <span className="badge-danger">Erro</span>;
-    return configured[provider] ? <span className="badge-warn">Configurado</span> : <span className="badge-warn">Nao configurado</span>;
+    return filled[provider] ? <span className="badge-warn">Pendente validacao</span> : <span className="badge-warn">Nao configurado</span>;
   };
 
   return (
