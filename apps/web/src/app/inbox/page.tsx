@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
 import { apiBaseUrl } from "../../lib/apiBase";
@@ -20,6 +20,19 @@ type Contact = {
   readonly id: string;
   readonly firstName: string;
   readonly lastName?: string;
+  readonly phoneNumber: string;
+};
+
+type SimulateState = {
+  readonly phoneNumber: string;
+  readonly profileName: string;
+  readonly text: string;
+};
+
+const SIMULATE_INITIAL: SimulateState = {
+  phoneNumber: "+55",
+  profileName: "Cliente Teste",
+  text: "Oi, queria saber valores e horarios.",
 };
 
 function contactName(contactId: string, contacts: readonly Contact[]): string {
@@ -28,42 +41,58 @@ function contactName(contactId: string, contacts: readonly Contact[]): string {
   return `${found.firstName} ${found.lastName ?? ""}`.trim();
 }
 
+function contactPhone(contactId: string, contacts: readonly Contact[]): string {
+  const found = contacts.find((item) => item.id === contactId);
+  return found?.phoneNumber ?? "-";
+}
+
 export default function InboxPage(): JSX.Element {
   const [messages, setMessages] = useState<readonly MessageRecord[]>([]);
   const [contacts, setContacts] = useState<readonly Contact[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [simulate, setSimulate] = useState<SimulateState>(SIMULATE_INITIAL);
   const [status, setStatus] = useState("Carregando inbox...");
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async (): Promise<void> => {
+    try {
+      const headers = defaultAppHeaders();
+      const [messagesRes, contactsRes] = await Promise.all([
+        fetch(`${apiBaseUrl()}/messages`, { headers }),
+        fetch(`${apiBaseUrl()}/contacts`, { headers }),
+      ]);
+
+      if (!messagesRes.ok || !contactsRes.ok) {
+        setStatus("Falha ao carregar inbox real.");
+        return;
+      }
+
+      const messageData = (await messagesRes.json()) as MessageRecord[];
+      const contactData = (await contactsRes.json()) as Contact[];
+
+      setMessages(messageData);
+      setContacts(contactData);
+      if (!selectedId && messageData[0]) {
+        setSelectedId(messageData[0].id);
+      }
+      setStatus(`Inbox carregada: ${messageData.length} mensagens.`);
+    } catch (error) {
+      setStatus(`Erro ao carregar inbox: ${String(error)}`);
+    }
+  }, [selectedId]);
 
   useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
-        const headers = defaultAppHeaders();
-
-        const [messagesRes, contactsRes] = await Promise.all([
-          fetch(`${apiBaseUrl()}/messages`, { headers }),
-          fetch(`${apiBaseUrl()}/contacts`, { headers }),
-        ]);
-
-        if (!messagesRes.ok || !contactsRes.ok) {
-          setStatus("Falha ao carregar inbox real.");
-          return;
-        }
-
-        const messageData = (await messagesRes.json()) as MessageRecord[];
-        const contactData = (await contactsRes.json()) as Contact[];
-
-        setMessages(messageData);
-        setContacts(contactData);
-        setSelectedId(messageData[0]?.id ?? null);
-        setStatus("Inbox carregada com dados reais.");
-      } catch (error) {
-        setStatus(`Erro ao carregar inbox: ${String(error)}`);
-      }
-    };
-
     void load();
-  }, []);
+  }, [load]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      void load();
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [load]);
 
   const queue = useMemo(() => {
     const unread = messages.filter((item) => item.status === "received").length;
@@ -80,6 +109,80 @@ export default function InboxPage(): JSX.Element {
   }, [messages]);
 
   const selected = messages.find((item) => item.id === selectedId) ?? null;
+
+  const sendDraft = async (): Promise<void> => {
+    if (!selected) {
+      setStatus("Selecione uma conversa para enviar.");
+      return;
+    }
+    if (!draft.trim()) {
+      setStatus("Digite a resposta antes de enviar.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/messages/send-whatsapp`, {
+        method: "POST",
+        headers: {
+          ...defaultAppHeaders(),
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          contactId: selected.contactId,
+          text: draft,
+        }),
+      });
+
+      if (!response.ok) {
+        setStatus(`Falha ao enviar: ${await response.text()}`);
+        return;
+      }
+
+      setDraft("");
+      setStatus("Mensagem enviada para o WhatsApp com sucesso.");
+      await load();
+    } catch (error) {
+      setStatus(`Erro no envio: ${String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const simulateInbound = async (): Promise<void> => {
+    if (!simulate.phoneNumber.trim() || !simulate.text.trim()) {
+      setStatus("Informe telefone e texto para simular inbound.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiBaseUrl()}/messages/simulate-inbound`, {
+        method: "POST",
+        headers: {
+          ...defaultAppHeaders(),
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          phoneNumber: simulate.phoneNumber,
+          profileName: simulate.profileName,
+          text: simulate.text,
+        }),
+      });
+
+      if (!response.ok) {
+        setStatus(`Falha na simulacao: ${await response.text()}`);
+        return;
+      }
+
+      setStatus("Inbound simulado com sucesso. Cliente e mensagem criados.");
+      await load();
+    } catch (error) {
+      setStatus(`Erro na simulacao: ${String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -104,11 +207,50 @@ export default function InboxPage(): JSX.Element {
         ))}
       </section>
 
+      <section className="section-card">
+        <h3 className="text-xl font-bold">Teste rapido (simular cliente)</h3>
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
+          <input
+            value={simulate.phoneNumber}
+            onChange={(event) => setSimulate((prev) => ({ ...prev, phoneNumber: event.target.value }))}
+            className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+            placeholder="+5511999999999"
+          />
+          <input
+            value={simulate.profileName}
+            onChange={(event) => setSimulate((prev) => ({ ...prev, profileName: event.target.value }))}
+            className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+            placeholder="Nome do cliente"
+          />
+          <button
+            type="button"
+            onClick={() => void simulateInbound()}
+            disabled={loading}
+            className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent disabled:opacity-60"
+          >
+            Simular inbound
+          </button>
+        </div>
+        <textarea
+          value={simulate.text}
+          onChange={(event) => setSimulate((prev) => ({ ...prev, text: event.target.value }))}
+          className="mt-3 min-h-20 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+          placeholder="Mensagem recebida do cliente"
+        />
+      </section>
+
       <section className="grid gap-4 2xl:grid-cols-12">
         <article className="section-card 2xl:col-span-7">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-xl font-bold">Fila de Conversas</h3>
-            <span className="text-xs text-slate-400">Fonte: /messages</span>
+            <button
+              type="button"
+              onClick={() => void load()}
+              disabled={loading}
+              className="rounded-lg border border-white/20 bg-white/5 px-3 py-1 text-xs disabled:opacity-60"
+            >
+              Atualizar agora
+            </button>
           </div>
           <div className="space-y-3">
             {messages.map((item) => (
@@ -139,10 +281,10 @@ export default function InboxPage(): JSX.Element {
                   Contato: <span className="font-semibold text-white">{contactName(selected.contactId, contacts)}</span>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-                  Classificacao atual: <span className="font-semibold text-white">{selected.status}</span>
+                  Telefone: <span className="font-semibold text-white">{contactPhone(selected.contactId, contacts)}</span>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-                  Mensagem: {selected.text || "(sem texto)"}
+                  Ultima mensagem: {selected.text || "(sem texto)"}
                 </div>
               </>
             ) : (
@@ -151,8 +293,21 @@ export default function InboxPage(): JSX.Element {
 
             <textarea value={draft} onChange={(event) => setDraft(event.target.value)} className="min-h-28 w-full rounded-xl border border-white/15 bg-black/20 p-3 text-sm" placeholder="Digite uma resposta..." />
             <div className="flex gap-2">
-              <button className="flex-1 rounded-xl border border-accent/50 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent">Salvar rascunho</button>
-              <button className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold">Enviar</button>
+              <button
+                type="button"
+                onClick={() => setStatus("Rascunho salvo localmente na sessao atual.")}
+                className="flex-1 rounded-xl border border-accent/50 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent"
+              >
+                Salvar rascunho
+              </button>
+              <button
+                type="button"
+                onClick={() => void sendDraft()}
+                disabled={loading}
+                className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold disabled:opacity-60"
+              >
+                Enviar
+              </button>
             </div>
           </div>
         </article>

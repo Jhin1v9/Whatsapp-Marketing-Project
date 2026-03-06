@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardWidgetBoard } from "../components/DashboardWidgetBoard";
 import { DataOpsPanel } from "../components/DataOpsPanel";
 import { PageHeader } from "../components/PageHeader";
@@ -33,6 +33,7 @@ type Contact = {
   readonly id: string;
   readonly firstName: string;
   readonly lastName?: string;
+  readonly doNotContact: boolean;
 };
 
 function toneByCampaignStatus(status: Campaign["status"]): BadgeTone {
@@ -62,37 +63,44 @@ export default function Home(): JSX.Element {
   const [contacts, setContacts] = useState<readonly Contact[]>([]);
   const [status, setStatus] = useState("Carregando dados operacionais...");
 
-  useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
-        const headers = defaultAppHeaders();
+  const load = useCallback(async (): Promise<void> => {
+    try {
+      const headers = defaultAppHeaders();
 
-        const [messagesRes, campaignsRes, contactsRes] = await Promise.all([
-          fetch(`${apiBaseUrl()}/messages`, { headers }),
-          fetch(`${apiBaseUrl()}/campaigns`, { headers }),
-          fetch(`${apiBaseUrl()}/contacts`, { headers }),
-        ]);
+      const [messagesRes, campaignsRes, contactsRes] = await Promise.all([
+        fetch(`${apiBaseUrl()}/messages`, { headers }),
+        fetch(`${apiBaseUrl()}/campaigns`, { headers }),
+        fetch(`${apiBaseUrl()}/contacts`, { headers }),
+      ]);
 
-        if (!messagesRes.ok || !campaignsRes.ok || !contactsRes.ok) {
-          setStatus("Falha ao carregar dados reais da API.");
-          return;
-        }
-
-        const messagesData = (await messagesRes.json()) as MessageRecord[];
-        const campaignsData = (await campaignsRes.json()) as Campaign[];
-        const contactsData = (await contactsRes.json()) as Contact[];
-
-        setMessages(messagesData);
-        setCampaigns(campaignsData);
-        setContacts(contactsData);
-        setStatus("Dados carregados da API.");
-      } catch (error) {
-        setStatus(`Erro ao carregar dashboard: ${String(error)}`);
+      if (!messagesRes.ok || !campaignsRes.ok || !contactsRes.ok) {
+        setStatus("Falha ao carregar dados reais da API.");
+        return;
       }
-    };
 
-    void load();
+      const messagesData = (await messagesRes.json()) as MessageRecord[];
+      const campaignsData = (await campaignsRes.json()) as Campaign[];
+      const contactsData = (await contactsRes.json()) as Contact[];
+
+      setMessages(messagesData);
+      setCampaigns(campaignsData);
+      setContacts(contactsData);
+      setStatus(`Dados atualizados: ${messagesData.length} mensagens, ${contactsData.length} contatos.`);
+    } catch (error) {
+      setStatus(`Erro ao carregar dashboard: ${String(error)}`);
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      void load();
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [load]);
 
   const filteredMessages = useMemo(() => {
     if (filters.channel === "all") return messages;
@@ -107,7 +115,7 @@ export default function Home(): JSX.Element {
 
   const readRate = messages.length > 0 ? Math.round((messages.filter((item) => item.status === "read").length / messages.length) * 1000) / 10 : 0;
   const deliveryRate = messages.length > 0 ? Math.round((messages.filter((item) => item.status === "delivered" || item.status === "read").length / messages.length) * 1000) / 10 : 0;
-  const optOutRate = contacts.length > 0 ? Math.round((contacts.filter((item) => false).length / contacts.length) * 1000) / 10 : 0;
+  const optOutRate = contacts.length > 0 ? Math.round((contacts.filter((item) => item.doNotContact).length / contacts.length) * 1000) / 10 : 0;
 
   return (
     <div className="space-y-6">
