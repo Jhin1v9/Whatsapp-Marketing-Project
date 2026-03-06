@@ -349,6 +349,10 @@ export default function IntegracoesPage(): JSX.Element {
   };
 
   const createFirstVault = async (): Promise<void> => {
+    if (!vaultQuestion.trim()) {
+      setStatus("Defina a pergunta de seguranca antes de criar o cofre.");
+      return;
+    }
     if (setupPassword.length < 4) {
       setStatus("Senha inicial precisa ter pelo menos 4 caracteres.");
       return;
@@ -533,10 +537,26 @@ export default function IntegracoesPage(): JSX.Element {
               {!hasVault ? (
                 <>
                   <p className="text-sm text-slate-300">Como e sua primeira vez acessando, informe sua senha para criar o cofre seguro.</p>
-                  <input value={vaultQuestion} onChange={(e) => setVaultQuestion(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Pergunta de seguranca" />
+                  <div className="rounded-xl border border-white/10 bg-black/10 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Pergunta de seguranca (obrigatoria)</p>
+                    <input
+                      value={vaultQuestion}
+                      onChange={(e) => setVaultQuestion(e.target.value)}
+                      className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+                      placeholder="Ex.: Qual era o nome do meu primeiro projeto?"
+                    />
+                  </div>
                   <input type="password" value={setupPassword} onChange={(e) => setSetupPassword(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Senha de edicao" />
                   <input type="password" value={setupPasswordConfirm} onChange={(e) => setSetupPasswordConfirm(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Confirmar senha" />
-                  <input value={setupAnswer} onChange={(e) => setSetupAnswer(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Resposta da pergunta de seguranca" />
+                  <div className="rounded-xl border border-white/10 bg-black/10 p-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Resposta da pergunta acima</p>
+                    <input
+                      value={setupAnswer}
+                      onChange={(e) => setSetupAnswer(e.target.value)}
+                      className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
+                      placeholder="Digite sua resposta secreta"
+                    />
+                  </div>
                   <div className="flex gap-2">
                     <input value={setupRecoveryCode} readOnly className="flex-1 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm" placeholder="Codigo de recuperacao" />
                     <button type="button" onClick={() => setSetupRecoveryCode(generateRecoveryCode())} className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs">Gerar codigo</button>
