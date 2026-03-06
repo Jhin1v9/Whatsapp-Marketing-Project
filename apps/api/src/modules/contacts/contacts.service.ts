@@ -1,7 +1,9 @@
 ﻿import { Injectable, NotFoundException } from "@nestjs/common";
+import * as XLSX from "xlsx";
 import type { RequestContext } from "../../common/types/request-context";
 import type { CreateContactDto } from "./dto/create-contact.dto";
 import type { CreateConsentDto } from "./dto/create-consent.dto";
+import type { ImportXlsxDto } from "./dto/import-xlsx.dto";
 import type { UpdateContactDto } from "./dto/update-contact.dto";
 
 export type ConsentLog = {
@@ -39,6 +41,13 @@ export type UpsertContactInput = {
   readonly lastName?: string;
   readonly whatsappProfileName?: string;
   readonly source: string;
+};
+
+export type ImportContactsResult = {
+  readonly created: number;
+  readonly updated: number;
+  readonly failed: number;
+  readonly errors: readonly string[];
 };
 
 @Injectable()
@@ -164,6 +173,86 @@ export class ContactsService {
     return contact;
   }
 
+  importFromXlsx(context: RequestContext, payload: ImportXlsxDto): ImportContactsResult {
+    const base64Raw = payload.fileBase64.trim();
+    const base64 = base64Raw.includes(",") ? base64Raw.split(",").pop() ?? "" : base64Raw;
+    const source = payload.source?.trim().length ? payload.source.trim() : "xlsx_import";
+    const errors: string[] = [];
+
+    if (!base64) {
+      return { created: 0, updated: 0, failed: 0, errors: ["Arquivo XLSX vazio."] };
+    }
+
+    const buffer = Buffer.from(base64, "base64");
+    const workbook = XLSX.read(buffer, { type: "buffer" });
+    const firstSheetName = workbook.SheetNames[0];
+
+    if (!firstSheetName) {
+      return { created: 0, updated: 0, failed: 0, errors: ["Planilha sem abas."] };
+    }
+
+    const sheet = workbook.Sheets[firstSheetName];
+    if (!sheet) {
+      return { created: 0, updated: 0, failed: 0, errors: ["Aba principal da planilha nao encontrada."] };
+    }
+
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
+    if (rows.length < 2) {
+      return { created: 0, updated: 0, failed: 0, errors: ["Planilha sem linhas de dados."] };
+    }
+
+    const firstRow = rows[0] ?? [];
+    const headers = firstRow.map((item) => this.normalizeHeader(this.toCellString(item)));
+
+    let created = 0;
+    let updated = 0;
+    let failed = 0;
+
+    for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
+      const row = rows[rowIndex] ?? [];
+
+      const firstName = this.readMappedValue(row, headers, ["first_name", "firstname", "nome"]);
+      const lastName = this.readMappedValue(row, headers, ["last_name", "lastname", "sobrenome"]);
+      const phoneRaw = this.readMappedValue(row, headers, ["phone_number", "phone", "telefone", "numero"]);
+      const tagsRaw = this.readMappedValue(row, headers, ["tags"]);
+      const rowSource = this.readMappedValue(row, headers, ["source", "origem"]) || source;
+
+      const phoneNumber = this.normalizePhone(phoneRaw);
+      if (!firstName || !phoneNumber) {
+        failed += 1;
+        errors.push(`Linha ${rowIndex + 1}: nome/telefone invalidos.`);
+        continue;
+      }
+
+      const existed = this.findByPhone(context, phoneNumber);
+      const tags = tagsRaw
+        .split(/[|,;]+/)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+
+      if (existed) {
+        this.update(context, existed.id, {
+          firstName,
+          ...(lastName ? { lastName } : {}),
+          source: rowSource,
+          ...(tags.length > 0 ? { tags } : {}),
+        });
+        updated += 1;
+      } else {
+        this.create(context, {
+          firstName,
+          ...(lastName ? { lastName } : {}),
+          phoneNumber,
+          source: rowSource,
+          ...(tags.length > 0 ? { tags } : {}),
+        });
+        created += 1;
+      }
+    }
+
+    return { created, updated, failed, errors };
+  }
+
   private findContact(context: RequestContext, contactId: string): Contact {
     const contact = this.contacts.find(
       (item) =>
@@ -175,5 +264,39 @@ export class ContactsService {
     }
 
     return contact;
+  }
+
+  private toCellString(value: unknown): string {
+    if (typeof value === "string") return value.trim();
+    if (typeof value === "number") return String(value);
+    return "";
+  }
+
+  private normalizeHeader(value: string): string {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  private readMappedValue(row: readonly unknown[], headers: readonly string[], aliases: readonly string[]): string {
+    for (const alias of aliases) {
+      const index = headers.findIndex((header) => header === alias);
+      if (index < 0) {
+        continue;
+      }
+      const value = this.toCellString(row[index]);
+      if (value.length > 0) {
+        return value;
+      }
+    }
+    return "";
+  }
+
+  private normalizePhone(raw: string): string {
+    const digits = raw.replace(/[^\d+]/g, "");
+    const withPlus = digits.startsWith("+") ? digits : `+${digits}`;
+    return /^\+[1-9]\d{7,14}$/.test(withPlus) ? withPlus : "";
   }
 }

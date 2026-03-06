@@ -13,6 +13,7 @@ type ContactImportPayload = {
 
 type ImportResult = {
   readonly created: number;
+  readonly updated?: number;
   readonly failed: number;
   readonly errors: readonly string[];
 };
@@ -117,6 +118,36 @@ export async function importContactsFromCsv(file: File): Promise<ImportResult> {
   }
 
   return { created, failed, errors };
+}
+
+export async function importContactsFromXlsx(file: File): Promise<ImportResult> {
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  const fileBase64 = btoa(binary);
+
+  const response = await fetch(`${apiBaseUrl()}/contacts/import-xlsx`, {
+    method: "POST",
+    headers: {
+      ...defaultAppHeaders(),
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      fileName: file.name,
+      fileBase64,
+      source: "xlsx_import",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao importar XLSX: ${await response.text()}`);
+  }
+
+  const result = (await response.json()) as ImportResult;
+  return result;
 }
 
 function triggerDownload(filename: string, content: string, mimeType: string): void {

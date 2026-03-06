@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { resolveActionIntent, routeByIntent } from "../lib/actionEngine";
-import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv } from "../lib/quickActions";
+import { exportContactsCsv, exportOperationalSnapshot, importContactsFromCsv, importContactsFromXlsx } from "../lib/quickActions";
 
 type ActionEngine = {
   readonly busy: boolean;
@@ -58,8 +58,19 @@ export function useActionEngine(): ActionEngine {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setStatus(`Arquivo ${file.name} recebido. Conversao XLSX sera tratada no backend dedicado; use CSV por enquanto.`);
-    event.target.value = "";
+    setBusy(true);
+    setStatus(`Importando ${file.name}...`);
+    try {
+      const result = await importContactsFromXlsx(file);
+      const updated = result.updated ?? 0;
+      setStatus(`Importacao XLSX concluida: ${result.created} criados, ${updated} atualizados, ${result.failed} falhas.`);
+      router.refresh();
+    } catch (error) {
+      setStatus(`Falha na importacao XLSX: ${String(error)}`);
+    } finally {
+      setBusy(false);
+      event.target.value = "";
+    }
   };
 
   const runAction = async (label: string): Promise<void> => {
