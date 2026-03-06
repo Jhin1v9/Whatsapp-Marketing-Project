@@ -14,7 +14,10 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  await app.listen(3001);
+  const portRaw = process.env.PORT?.trim();
+  const port = portRaw && /^\d+$/.test(portRaw) ? Number(portRaw) : 3001;
+
+  await app.listen(port);
 }
 
 void bootstrap();
