@@ -366,6 +366,8 @@ export default function IntegracoesPage(): JSX.Element {
     if (isEditUnlocked) {
       try {
         await persistEncrypted(result.map);
+        lockEditing();
+        setStatus(`Healthcheck de ${provider} executado e sessao bloqueada automaticamente.`);
       } catch (error) {
         setStatus(`Healthcheck executado, mas falhou ao persistir cofre: ${String(error)}`);
       }
@@ -547,6 +549,15 @@ export default function IntegracoesPage(): JSX.Element {
               <span className={`rounded-full px-2 py-1 text-xs ${isEditUnlocked ? "badge-ok" : "badge-warn"}`}>
                 {isEditUnlocked ? "Edicao liberada" : "Edicao bloqueada"}
               </span>
+              {isEditUnlocked ? (
+                <button
+                  type="button"
+                  onClick={lockEditing}
+                  className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs"
+                >
+                  Bloquear agora
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setShowUnlockBox((prev) => !prev)}
