@@ -1567,7 +1567,15 @@ export async function runCampaign(
   context: RequestContext,
   campaignId: string,
   payload: { readonly overrideMessage?: string },
-): Promise<{ readonly queued: number; readonly campaignId: string }> {
+): Promise<{
+  readonly campaignId: string;
+  readonly status: CampaignStatus;
+  readonly processed: number;
+  readonly sent: number;
+  readonly queued: number;
+  readonly failed: number;
+  readonly deliveryMode: "meta" | "queue_local" | "mixed" | "failed";
+}> {
   const campaign = findCampaignOrThrow(context, campaignId);
   if (!campaign.approvedVariation) {
     throw new Error("Campanha exige aprovacao humana antes de executar.");
@@ -1580,7 +1588,9 @@ export async function runCampaign(
     campaign.aiDrafts.find((item) => item.variation === campaign.approvedVariation)?.content ?? campaign.template;
   const messageText = payload.overrideMessage?.trim() || approvedContent;
 
-  let queued = 0;
+  let sent = 0;
+  let queuedLocal = 0;
+  let failed = 0;
   for (const phoneNumber of campaign.recipients) {
     const phoneTail = phoneNumber.replace(/\D/g, "").slice(-4) || "0000";
     const contact = upsertContactByPhone(context, {
@@ -1589,28 +1599,49 @@ export async function runCampaign(
       source: "campaign_run",
     });
 
-    createMessage(context, {
-      contactId: contact.id,
-      channel: "whatsapp",
-      direction: "outbound",
-      text: messageText,
-      status: "queued",
-    });
+    try {
+      const result = await sendWhatsAppMessage(context, {
+        contactId: contact.id,
+        text: messageText,
+      });
 
-    queued += 1;
+      if (result.deliveryMode === "meta") {
+        sent += 1;
+      } else {
+        queuedLocal += 1;
+      }
+    } catch {
+      failed += 1;
+    }
   }
+
+  const processed = campaign.recipients.length;
+  const nextStatus: CampaignStatus = failed >= processed ? "paused" : "completed";
+  const deliveryMode: "meta" | "queue_local" | "mixed" | "failed" =
+    sent > 0 && queuedLocal > 0 ? "mixed"
+      : sent > 0 ? "meta"
+        : queuedLocal > 0 ? "queue_local"
+          : "failed";
 
   const store = getStore();
   const index = store.campaigns.findIndex((item) => item.id === campaign.id);
   if (index >= 0) {
     store.campaigns[index] = {
       ...campaign,
-      status: "running",
+      status: nextStatus,
     };
     markRuntimeStoreDirty();
   }
 
-  return { queued, campaignId };
+  return {
+    campaignId,
+    status: nextStatus,
+    processed,
+    sent,
+    queued: queuedLocal,
+    failed,
+    deliveryMode,
+  };
 }
 
 function findUserForTenantOrThrow(context: RequestContext, userId: string): AuthUser {

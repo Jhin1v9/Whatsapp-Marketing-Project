@@ -18,6 +18,16 @@ type Campaign = {
   readonly template: string;
 };
 
+type RunCampaignResult = {
+  readonly campaignId: string;
+  readonly status: Campaign["status"];
+  readonly processed: number;
+  readonly sent: number;
+  readonly queued: number;
+  readonly failed: number;
+  readonly deliveryMode: "meta" | "queue_local" | "mixed" | "failed";
+};
+
 type Contact = {
   readonly id: string;
   readonly firstName: string;
@@ -394,8 +404,16 @@ export default function CampanhasPage(): JSX.Element {
         return false;
       }
 
-      const runResult = (await runResponse.json()) as { readonly queued: number };
-      setStatus(`Campanha executada. Mensagens na fila: ${runResult.queued}.`);
+      const runResult = (await runResponse.json()) as RunCampaignResult;
+      if (runResult.failed > 0) {
+        setStatus(
+          `Campanha executada com falhas. Processadas: ${runResult.processed}, enviadas: ${runResult.sent}, fila local: ${runResult.queued}, falhas: ${runResult.failed}.`,
+        );
+      } else {
+        setStatus(
+          `Campanha executada. Processadas: ${runResult.processed}, enviadas: ${runResult.sent}, fila local: ${runResult.queued}.`,
+        );
+      }
       await load();
       return true;
     } catch (error) {

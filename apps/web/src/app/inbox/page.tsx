@@ -33,6 +33,16 @@ type Campaign = {
   readonly recipients: readonly string[];
 };
 
+type RunCampaignResult = {
+  readonly campaignId: string;
+  readonly status: "draft" | "scheduled" | "running" | "paused" | "completed";
+  readonly processed: number;
+  readonly sent: number;
+  readonly queued: number;
+  readonly failed: number;
+  readonly deliveryMode: "meta" | "queue_local" | "mixed" | "failed";
+};
+
 type ActionMode = "send_message" | "create_campaign" | "use_existing_campaign";
 
 type QuickReply = {
@@ -421,7 +431,7 @@ export default function InboxPage(): JSX.Element {
     campaignId: string,
     campaignName: string,
     overrideMessage?: string,
-  ): Promise<number> => {
+  ): Promise<RunCampaignResult> => {
     const headers = {
       ...defaultAppHeaders(),
       "content-type": "application/json",
@@ -467,8 +477,8 @@ export default function InboxPage(): JSX.Element {
       throw new Error(`Falha ao executar campanha: ${await runResponse.text()}`);
     }
 
-    const runResult = (await runResponse.json()) as { readonly queued: number };
-    return runResult.queued;
+    const runResult = (await runResponse.json()) as RunCampaignResult;
+    return runResult;
   };
 
   const createCampaignForSelectedContact = async (): Promise<void> => {
@@ -513,8 +523,10 @@ export default function InboxPage(): JSX.Element {
       }
 
       const created = (await createResponse.json()) as Campaign;
-      const queued = await runCampaignFlow(created.id, created.name, newCampaignTemplate);
-      setStatus(`Propaganda criada e enviada para ${fullName(selectedContact)}. Fila: ${queued}.`);
+      const runResult = await runCampaignFlow(created.id, created.name, newCampaignTemplate);
+      setStatus(
+        `Propaganda criada e executada para ${fullName(selectedContact)}. Enviadas: ${runResult.sent}, fila local: ${runResult.queued}, falhas: ${runResult.failed}.`,
+      );
       setNewCampaignName("");
       await load();
     } catch (error) {
@@ -568,8 +580,10 @@ export default function InboxPage(): JSX.Element {
       }
 
       const created = (await createResponse.json()) as Campaign;
-      const queued = await runCampaignFlow(created.id, created.name, baseCampaign.template);
-      setStatus(`Anuncio "${baseCampaign.name}" aplicado para ${fullName(selectedContact)}. Fila: ${queued}.`);
+      const runResult = await runCampaignFlow(created.id, created.name, baseCampaign.template);
+      setStatus(
+        `Anuncio "${baseCampaign.name}" aplicado para ${fullName(selectedContact)}. Enviadas: ${runResult.sent}, fila local: ${runResult.queued}, falhas: ${runResult.failed}.`,
+      );
       await load();
     } catch (error) {
       setStatus(`Erro ao usar anuncio existente: ${String(error)}`);
