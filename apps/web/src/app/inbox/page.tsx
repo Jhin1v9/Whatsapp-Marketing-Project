@@ -447,7 +447,12 @@ export default function InboxPage(): JSX.Element {
     });
 
     if (!draftsResponse.ok) {
-      throw new Error(`Falha ao gerar variacoes IA: ${await draftsResponse.text()}`);
+      const detail = await draftsResponse.text();
+      if (detail.includes("Campanha nao encontrada")) {
+        await load();
+        throw new Error("Campanha nao encontrada no backend. Inbox recarregada, tente novamente.");
+      }
+      throw new Error(`Falha ao gerar variacoes IA: ${detail}`);
     }
 
     const approveResponse = await fetch(`${apiBaseUrl()}/campaigns/${campaignId}/approve`, {

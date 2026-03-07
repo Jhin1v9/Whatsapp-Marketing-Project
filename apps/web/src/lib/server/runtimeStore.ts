@@ -666,6 +666,7 @@ export function createContact(
 
   const store = getStore();
   store.contacts.unshift(item);
+  markRuntimeStoreDirty();
   return item;
 }
 
@@ -778,6 +779,7 @@ export function addConsent(
   };
   const store = getStore();
   store.consents.unshift(consent);
+  markRuntimeStoreDirty();
   return consent;
 }
 
@@ -1143,6 +1145,7 @@ export function createMessage(
 
   const store = getStore();
   store.messages.unshift(record);
+  markRuntimeStoreDirty();
   return record;
 }
 
@@ -1437,6 +1440,7 @@ export function createCampaign(
 
   const store = getStore();
   store.campaigns.unshift(campaign);
+  markRuntimeStoreDirty();
   return campaign;
 }
 

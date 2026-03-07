@@ -375,7 +375,13 @@ export default function CampanhasPage(): JSX.Element {
       });
 
       if (!draftsResponse.ok) {
-        setStatus(`Falha ao gerar variacoes IA: ${await draftsResponse.text()}`);
+        const detail = await draftsResponse.text();
+        if (detail.includes("Campanha nao encontrada")) {
+          await load();
+          setStatus("Campanha nao encontrada no backend. Lista recarregada; tente executar novamente.");
+        } else {
+          setStatus(`Falha ao gerar variacoes IA: ${detail}`);
+        }
         return false;
       }
 
