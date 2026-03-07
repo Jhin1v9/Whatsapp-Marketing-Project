@@ -32,6 +32,15 @@ type IntegrationHealthResponse = {
   readonly detail: string;
 };
 
+type IntegrationHealthErrorResponse = {
+  readonly detail?: string;
+  readonly error?: string;
+  readonly provider?: string;
+  readonly ok?: boolean;
+  readonly checkedAt?: string;
+  readonly httpStatus?: number;
+};
+
 type MetaRuntimeStatus = {
   readonly mode: "real" | "setup_required";
   readonly configured: boolean;
@@ -124,6 +133,27 @@ function SecretField({ value, placeholder, revealed, disabled, onToggle, onChang
       ) : null}
     </div>
   );
+}
+
+async function readHealthcheckError(response: Response): Promise<string> {
+  const fallback = `Teste falhou: HTTP ${response.status}`;
+  const responseClone = response.clone();
+
+  try {
+    const payload = (await response.json()) as IntegrationHealthErrorResponse;
+    if (payload.detail?.trim()) {
+      return payload.detail.trim();
+    }
+    if (payload.error?.trim()) {
+      return payload.error.trim();
+    }
+  } catch {
+    // fallback below
+  }
+
+  const raw = await responseClone.text().catch(() => "");
+  const normalized = raw.trim();
+  return normalized.length > 0 ? normalized : fallback;
 }
 
 export default function IntegracoesPage(): JSX.Element {
@@ -345,8 +375,7 @@ export default function IntegracoesPage(): JSX.Element {
       });
 
       if (!response.ok) {
-        const rawDetail = await response.text();
-        const detail = rawDetail && rawDetail.trim().length > 0 ? rawDetail : `Teste falhou: ${response.status}`;
+        const detail = await readHealthcheckError(response);
 
         const map = {
           ...health,

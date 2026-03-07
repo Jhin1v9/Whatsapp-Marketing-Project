@@ -44,11 +44,35 @@ async function checkMeta(payload: HealthPayload): Promise<HealthResult> {
   });
 
   if (!response.ok) {
+    const raw = await response.text().catch(() => "");
+    let providerReason = "";
+    try {
+      const parsed = JSON.parse(raw) as {
+        readonly error?: {
+          readonly message?: string;
+          readonly code?: number;
+          readonly error_subcode?: number;
+        };
+      };
+      if (parsed.error?.message) {
+        const code = parsed.error.code ? ` (code ${parsed.error.code})` : "";
+        const subcode = parsed.error.error_subcode ? ` subcode ${parsed.error.error_subcode}` : "";
+        providerReason = `${parsed.error.message}${code}${subcode}`;
+      }
+    } catch {
+      providerReason = raw.trim();
+    }
+
+    const normalizedReason = providerReason.trim();
+    const suffix = normalizedReason
+      ? ` Detalhe Meta: ${normalizedReason}`
+      : " Verifique se o token eh permanente (System User), se nao expirou e se o Phone Number ID pertence ao mesmo WABA.";
+
     return {
       provider: "meta_whatsapp",
       ok: false,
       checkedAt: nowIso(),
-      detail: "Meta respondeu erro para esse token/phone_number_id.",
+      detail: `Meta recusou as credenciais (HTTP ${response.status}).${suffix}`,
       httpStatus: response.status,
     };
   }
