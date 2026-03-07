@@ -1,0 +1,121 @@
+{
+  "startedAt": "2026-03-07T03:42:16.863Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "artifactDir": "artifacts/ui-buyer-audit-1772854936862",
+  "seed": {
+    "contacts": 3
+  },
+  "steps": [
+    {
+      "name": "dashboard_value_clarity",
+      "ok": true,
+      "details": {
+        "header": "Plataforma Conversational Marketing",
+        "sub": "SaaS Core",
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/01-dashboard.png"
+      }
+    },
+    {
+      "name": "create_client",
+      "ok": true,
+      "details": {
+        "buyerName": "Buyer 944286",
+        "buyerPhonePretty": "+34 612 777 333",
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/02-create-client.png"
+      }
+    },
+    {
+      "name": "client_visible_in_list",
+      "ok": true,
+      "details": {
+        "listed": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/03-client-list.png"
+      }
+    },
+    {
+      "name": "campaign_create_and_execute",
+      "ok": true,
+      "details": {
+        "created": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/04-campaigns.png"
+      }
+    },
+    {
+      "name": "bulk_send_with_cadence",
+      "ok": true,
+      "details": {
+        "completed": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/05-bulk-send.png"
+      }
+    },
+    {
+      "name": "inbox_customer_actions",
+      "ok": true,
+      "details": {
+        "sent": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/06-inbox-actions.png"
+      }
+    },
+    {
+      "name": "templates_and_ia_loop",
+      "ok": false,
+      "details": "Error: Criacao de template falhou. status=200; total=2; nomes=camp_buy_944286|camp_buy_944286"
+    },
+    {
+      "name": "integrations_sense_check",
+      "ok": true,
+      "details": {
+        "hasFeedback": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772854936862/08-integrations.png"
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "step": "templates_and_ia_loop",
+      "detail": "Error: Criacao de template falhou. status=200; total=2; nomes=camp_buy_944286|camp_buy_944286"
+    }
+  ],
+  "visualSignals": [
+    {
+      "area": "clientes",
+      "detail": "Contato persistiu em dados, mas feedback visual na grade demorou ou nao foi imediato."
+    }
+  ],
+  "metrics": {
+    "emptyPlaceholders": [
+      {
+        "route": "/",
+        "count": 1
+      },
+      {
+        "route": "/clientes/novo",
+        "count": 4
+      },
+      {
+        "route": "/clientes",
+        "count": 2
+      },
+      {
+        "route": "/campanhas",
+        "count": 1
+      },
+      {
+        "route": "/envio-massa",
+        "count": 4
+      },
+      {
+        "route": "/inbox",
+        "count": 3
+      }
+    ]
+  },
+  "score": {
+    "reliability": 88,
+    "uxClarity": 85,
+    "buyReadiness": 87
+  },
+  "verdict": "QUASE_APTO_COM_AJUSTES",
+  "serverLogsTail": "\n> @app/web@0.1.0 dev\n> next dev -p 3000\n\n  ▲ Next.js 14.2.20\n  - Local:        http://localhost:3000\n\n ✓ Starting...\n ✓ Ready in 3.1s\n ○ Compiling / ...\n ✓ Compiled / in 1350ms (524 modules)\n GET / 200 in 1707ms\n ✓ Compiled /contacts in 229ms (297 modules)\n POST /contacts 201 in 417ms\n POST /contacts 201 in 14ms\n POST /contacts 201 in 15ms\n ✓ Compiled /messages/simulate-inbound in 100ms (299 modules)\n POST /messages/simulate-inbound 201 in 207ms\n GET / 200 in 154ms\n ✓ Compiled /campaigns in 283ms (301 modules)\n ✓ Compiled (306 modules)\n GET /contacts 200 in 480ms\n GET /messages 200 in 501ms\n GET /campaigns 200 in 533ms\n GET /contacts 200 in 73ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 44ms\n ✓ Compiled /clientes/novo in 454ms (575 modules)\n GET /me/preferences/ui_theme_mode 200 in 1162ms\n GET /me/preferences/global_filters 200 in 1162ms\n GET /me/preferences/ui_theme_mode 200 in 192ms\n GET /me/preferences/global_filters 200 in 196ms\n GET /clientes/novo 200 in 730ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 29ms\n GET /me/preferences/ui_theme_mode 200 in 39ms\n GET /me/preferences/global_filters 200 in 38ms\n POST /contacts 201 in 28ms\n ✓ Compiled /contacts/[contactId]/consents in 289ms (312 modules)\n GET /contacts 200 in 16ms\n POST /contacts/contact_4/consents 201 in 1095ms\n ✓ Compiled /clientes in 337ms (583 modules)\n GET /clientes 200 in 436ms\n GET /contacts 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 56ms\n GET /me/preferences/global_filters 200 in 55ms\n GET /contacts 200 in 56ms\n GET /contacts 200 in 55ms\n GET /me/preferences/ui_theme_mode 200 in 34ms\n GET /me/preferences/global_filters 200 in 33ms\n ○ Compiling /campanhas ...\n ✓ Compiled /campanhas in 2.6s (603 modules)\n GET /campanhas 200 in 2715ms\n GET /campaigns 200 in 48ms\n GET /contacts 200 in 59ms\n GET /me/preferences/ui_theme_mode 200 in 75ms\n GET /me/preferences/global_filters 200 in 74ms\n GET /campaigns 200 in 69ms\n GET /contacts 200 in 55ms\n GET /me/preferences/ui_theme_mode 200 in 62ms\n GET /me/preferences/global_filters 200 in 61ms\n POST /campaigns 201 in 48ms\n ✓ Compiled /campaigns/[campaignId]/ai-drafts in 449ms (322 modules)\n ⨯ SyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at loadManifest (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\load-manifest.js:36:25)\n    at getMaybePagePath (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require.js:57:59)\n    at getPagePath (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require.js:92:22)\n    at requirePage (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require.js:99:22)\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\load-components.js:98:84\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async loadComponentsImpl (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\load-components.js:98:26)\n    at async Object.loadStaticPaths (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\dev\\static-paths-worker.js:23:24) {\n  type: 'SyntaxError',\n  page: '/campaigns/campaign_1/ai-drafts'\n}\n ○ Compiling /_error ...\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\DumpStack.log.tmp'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\System Volume Information'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\pagefile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\swapfile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\DumpStack.log.tmp'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\System Volume Information'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\pagefile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\swapfile.sys'\n ✓ Compiled /_error in 2.1s (823 modules)\n POST /campaigns/campaign_1/ai-drafts 500 in 3300ms\n GET /envio-massa 200 in 2772ms\n GET /contacts 200 in 114ms\n GET /me/preferences/ui_theme_mode 200 in 139ms\n GET /me/preferences/global_filters 200 in 138ms\n GET /contacts 200 in 57ms\n GET /me/preferences/ui_theme_mode 200 in 34ms\n GET /me/preferences/global_filters 200 in 32ms\n ○ Compiling /inbox ...\n ✓ Compiled /inbox in 559ms (829 modules)\n GET /inbox 200 in 748ms\n GET /me/preferences/ui_theme_mode 200 in 69ms\n GET /me/preferences/global_filters 200 in 65ms\n GET /messages 200 in 89ms\n GET /contacts 200 in 92ms\n GET /campaigns 200 in 98ms\n GET /messages 200 in 35ms\n GET /contacts 200 in 41ms\n GET /campaigns 200 in 42ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /messages 200 in 27ms\n GET /contacts 200 in 31ms\n GET /campaigns 200 in 33ms\n ✓ Compiled /messages/send-whatsapp in 296ms (373 modules)\n POST /messages/send-whatsapp 200 in 366ms\n GET /messages 200 in 30ms\n GET /contacts 200 in 36ms\n GET /campaigns 200 in 41ms\n GET /messages 200 in 11ms\n ✓ Compiled /templates in 500ms (837 modules)\n GET /templates 200 in 611ms\n GET /me/preferences/ui_theme_mode 200 in 39ms\n GET /me/preferences/global_filters 200 in 38ms\n GET /me/preferences/templates_library_v1 200 in 36ms\n GET /me/preferences/ui_theme_mode 200 in 20ms\n GET /campaigns 200 in 46ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /me/preferences/templates_library_v1 200 in 50ms\n PUT /me/preferences/templates_library_v1 200 in 27ms\n GET /campaigns 200 in 27ms\n PUT /me/preferences/templates_library_v1 200 in 16ms\n PUT /me/preferences/templates_library_v1 200 in 15ms\n GET /me/preferences/templates_library_v1 200 in 19ms\n ○ Compiling /integracoes ...\n ✓ Compiled /integracoes in 543ms (845 modules)\n GET /integracoes 200 in 681ms\n GET /me/preferences/ui_theme_mode 200 in 36ms\n GET /me/preferences/global_filters 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 20ms\n GET /me/preferences/global_filters 200 in 29ms\n",
+  "finishedAt": "2026-03-07T03:42:47.274Z"
+}

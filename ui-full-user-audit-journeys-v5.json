@@ -1,0 +1,82 @@
+﻿{
+  "startedAt": "2026-03-07T00:54:14.091Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [
+    {
+      "name": "create_client_ui",
+      "ok": true,
+      "details": {
+        "userName": "Auditoria 861490",
+        "userPhonePretty": "+34 612 340 123"
+      }
+    },
+    {
+      "name": "verify_client_on_list",
+      "ok": true,
+      "details": {
+        "listedPhone": "+34612340123"
+      }
+    },
+    {
+      "name": "campaign_create_and_send",
+      "ok": true,
+      "details": {
+        "campaignName": "camp_861490"
+      }
+    },
+    {
+      "name": "bulk_send_flow",
+      "ok": true,
+      "details": {
+        "message": "bulk_send_done"
+      }
+    },
+    {
+      "name": "inbox_client_actions",
+      "ok": false,
+      "details": "Error: Criar propaganda na inbox falhou."
+    },
+    {
+      "name": "templates_crud",
+      "ok": true,
+      "details": {
+        "templateName": "tpl_861490"
+      }
+    },
+    {
+      "name": "ia_studio_flow",
+      "ok": true,
+      "details": {
+        "iaStudio": "ok"
+      }
+    }
+  ],
+  "routeSweep": [],
+  "failures": [
+    {
+      "area": "journey",
+      "step": "inbox_client_actions",
+      "detail": "Error: Criar propaganda na inbox falhou."
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "serverLogsTail": "\n> @app/web@0.1.0 dev\n> next dev -p 3000\n\n  ▲ Next.js 14.2.20\n  - Local:        http://localhost:3000\n\n ✓ Starting...\n ✓ Ready in 2.9s\n ○ Compiling / ...\n ✓ Compiled / in 1241ms (524 modules)\n GET / 200 in 1584ms\n ✓ Compiled /contacts in 387ms (294 modules)\n POST /contacts 201 in 575ms\n POST /contacts 201 in 14ms\n POST /contacts 201 in 15ms\n ✓ Compiled /messages/simulate-inbound in 106ms (296 modules)\n POST /messages/simulate-inbound 201 in 209ms\n ✓ Compiled /campaigns in 94ms (298 modules)\n POST /campaigns 201 in 147ms\n ○ Compiling /clientes/novo ...\n ✓ Compiled /clientes/novo in 2.4s (581 modules)\n GET /clientes/novo 200 in 2611ms\n ✓ Compiled /me/preferences/[key] in 413ms (305 modules)\n POST /contacts 201 in 480ms\n ✓ Compiled /contacts/[contactId]/consents in 142ms (307 modules)\n GET /me/preferences/ui_theme_mode 200 in 1208ms\n GET /me/preferences/global_filters 200 in 1207ms\n GET /me/preferences/ui_theme_mode 200 in 30ms\n GET /me/preferences/global_filters 200 in 29ms\n POST /contacts/contact_4/consents 201 in 848ms\n ○ Compiling /clientes ...\n ✓ Compiled /clientes in 553ms (578 modules)\n GET /clientes 200 in 698ms\n GET /contacts 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 50ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /contacts 200 in 29ms\n GET /me/preferences/ui_theme_mode 200 in 27ms\n GET /me/preferences/global_filters 200 in 26ms\n ✓ Compiled /campanhas in 297ms (584 modules)\n GET /campanhas 200 in 417ms\n GET /campaigns 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 55ms\n GET /contacts 200 in 61ms\n GET /campaigns 200 in 72ms\n GET /contacts 200 in 56ms\n GET /me/preferences/ui_theme_mode 200 in 60ms\n GET /me/preferences/global_filters 200 in 58ms\n POST /campaigns 201 in 49ms\n ○ Compiling /campaigns/[campaignId]/ai-drafts ...\n ✓ Compiled /campaigns/[campaignId]/ai-drafts in 519ms (592 modules)\n GET /envio-massa 200 in 636ms\n POST /campaigns/campaign_2/ai-drafts 200 in 559ms\n GET /contacts 200 in 27ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 46ms\n GET /contacts 200 in 52ms\n GET /me/preferences/ui_theme_mode 200 in 30ms\n GET /me/preferences/global_filters 200 in 29ms\n ✓ Compiled /messages/send-whatsapp in 186ms (323 modules)\n POST /messages/send-whatsapp 200 in 240ms\n ✓ Compiled /inbox in 334ms (600 modules)\n GET /inbox 200 in 414ms\n ✓ Compiled /messages in 233ms (329 modules)\n GET /campaigns 200 in 491ms\n GET /contacts 200 in 491ms\n GET /me/preferences/ui_theme_mode 200 in 490ms\n GET /me/preferences/global_filters 200 in 490ms\n GET /messages 200 in 526ms\n GET /campaigns 200 in 43ms\n GET /contacts 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 54ms\n GET /messages 200 in 44ms\n GET /campaigns 200 in 34ms\n GET /contacts 200 in 36ms\n GET /messages 200 in 27ms\n POST /messages/send-whatsapp 200 in 15ms\n GET /messages 200 in 21ms\n GET /contacts 200 in 24ms\n GET /campaigns 200 in 26ms\n GET /messages 200 in 31ms\n GET /contacts 200 in 35ms\n GET /campaigns 200 in 38ms\n POST /campaigns 201 in 13ms\n POST /campaigns/campaign_3/ai-drafts 200 in 26ms\n ✓ Compiled /campaigns/[campaignId]/approve in 323ms (331 modules)\n POST /campaigns/campaign_3/approve 200 in 1034ms\n ✓ Compiled /campaigns/[campaignId]/run in 281ms (333 modules)\n POST /campaigns/campaign_3/run 200 in 982ms\n GET /messages 200 in 26ms\n GET /contacts 200 in 33ms\n GET /campaigns 200 in 37ms\n GET /messages 200 in 23ms\n GET /contacts 200 in 26ms\n GET /campaigns 200 in 27ms\n GET /messages 200 in 23ms\n GET /contacts 200 in 26ms\n GET /campaigns 200 in 28ms\n ✓ Compiled /templates in 420ms (612 modules)\n GET /templates 200 in 515ms\n GET /me/preferences/ui_theme_mode 200 in 47ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/templates_library_v1 200 in 41ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 49ms\n GET /me/preferences/templates_library_v1 200 in 49ms\n GET /me/preferences/global_filters 200 in 47ms\n PUT /me/preferences/templates_library_v1 200 in 20ms\n GET /campaigns 200 in 20ms\n PUT /me/preferences/templates_library_v1 200 in 16ms\n PUT /me/preferences/templates_library_v1 200 in 22ms\n PUT /me/preferences/templates_library_v1 200 in 13ms\n PUT /me/preferences/templates_library_v1 200 in 20ms\n PUT /me/preferences/templates_library_v1 200 in 14ms\n POST /campaigns 201 in 11ms\n ✓ Compiled /ia-studio in 357ms (618 modules)\n GET /ia-studio 200 in 445ms\n GET /campaigns 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 60ms\n GET /me/preferences/global_filters 200 in 57ms\n GET /campaigns 200 in 66ms\n GET /me/preferences/ui_theme_mode 200 in 30ms\n GET /me/preferences/global_filters 200 in 28ms\n POST /campaigns/campaign_4/ai-drafts 200 in 22ms\n GET /campaigns 200 in 11ms\n POST /campaigns/campaign_4/approve 200 in 24ms\n GET /campaigns 200 in 13ms\n ✓ Compiled /campaigns/[campaignId] in 333ms (343 modules)\n PATCH /campaigns/campaign_4 200 in 1015ms\n GET /campaigns 200 in 12ms\n",
+  "summary": {
+    "runMode": "journeys",
+    "routesChecked": 0,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 7,
+    "journeysFailed": 1,
+    "failuresTotal": 1,
+    "consoleErrorsUnique": 0,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T00:55:07.383Z"
+}

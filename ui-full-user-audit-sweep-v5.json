@@ -1,0 +1,226 @@
+﻿{
+  "startedAt": "2026-03-07T01:08:19.065Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [],
+  "routeSweep": [
+    {
+      "route": "/",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 18,
+      "clicksOk": 13,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/inbox",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/campanhas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/envio-massa",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 18,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/automacoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/crm",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes/novo",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 17,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/pipeline-kanban",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/tarefas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/agenda",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/ia-studio",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/templates",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 22,
+      "clicksOk": 22,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/base-conhecimento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 10,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/analytics",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 14,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/relatorios",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 15,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/faturamento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 12,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/compliance",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/integracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/configuracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/login",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/register",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "serverLogsTail": "ET /contacts 200 in 32ms\n GET /messages 200 in 36ms\n GET /campaigns 200 in 36ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /contacts 200 in 52ms\n GET /messages 200 in 37ms\n GET /campaigns 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 41ms\n GET /me/preferences/global_filters 200 in 41ms\n GET /messages 200 in 44ms\n GET /campaigns 200 in 51ms\n GET /contacts 200 in 55ms\n GET /me/preferences/report_schedules_v1 200 in 58ms\n GET /messages 200 in 68ms\n GET /campaigns 200 in 71ms\n GET /contacts 200 in 74ms\n GET /me/preferences/report_schedules_v1 200 in 54ms\n GET /compliance 200 in 107ms\n GET /contacts 200 in 27ms\n GET /messages 200 in 32ms\n GET /campaigns 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 47ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /contacts 200 in 56ms\n GET /messages 200 in 38ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 37ms\n GET /me/preferences/knowledge_docs_v1 200 in 13ms\n GET /me/preferences/knowledge_docs_v1 200 in 14ms\n GET /compliance 200 in 61ms\n GET /contacts 200 in 30ms\n GET /messages 200 in 33ms\n GET /campaigns 200 in 33ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /me/preferences/global_filters 200 in 44ms\n GET /contacts 200 in 51ms\n GET /messages 200 in 32ms\n GET /campaigns 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 33ms\n GET /me/preferences/global_filters 200 in 32ms\n PUT /me/preferences/ui_theme_mode 200 in 13ms\n GET /campaigns 200 in 15ms\n GET /contacts 200 in 21ms\n GET /campaigns 200 in 20ms\n GET /contacts 200 in 18ms\n GET /compliance 200 in 93ms\n GET /contacts 200 in 32ms\n GET /messages 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 46ms\n GET /campaigns 200 in 51ms\n GET /contacts 200 in 59ms\n GET /messages 200 in 43ms\n GET /campaigns 200 in 43ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /contacts 200 in 53ms\n GET /compliance 200 in 62ms\n GET /contacts 200 in 30ms\n GET /messages 200 in 35ms\n GET /campaigns 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 48ms\n GET /me/preferences/global_filters 200 in 48ms\n GET /contacts 200 in 59ms\n GET /messages 200 in 36ms\n GET /campaigns 200 in 44ms\n GET /me/preferences/ui_theme_mode 200 in 43ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /messages 200 in 28ms\n GET /contacts 200 in 30ms\n GET /campaigns 200 in 31ms\n GET /messages 200 in 23ms\n GET /contacts 200 in 26ms\n GET /campaigns 200 in 29ms\n GET /compliance 200 in 82ms\n GET /contacts 200 in 33ms\n GET /messages 200 in 35ms\n GET /campaigns 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 48ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /contacts 200 in 59ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 36ms\n GET /me/preferences/global_filters 200 in 35ms\n GET /contacts 200 in 23ms\n GET /campaigns 200 in 26ms\n GET /messages 200 in 29ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 22ms\n GET /campaigns 200 in 25ms\n GET /messages 200 in 26ms\n ○ Compiling /integracoes ...\n ✓ Compiled /integracoes in 634ms (649 modules)\n GET /integracoes 200 in 744ms\n GET /me/preferences/ui_theme_mode 200 in 27ms\n GET /me/preferences/global_filters 200 in 26ms\n GET /me/preferences/ui_theme_mode 200 in 27ms\n GET /me/preferences/global_filters 200 in 37ms\n GET /integracoes 200 in 49ms\n GET /me/preferences/ui_theme_mode 200 in 26ms\n GET /me/preferences/global_filters 200 in 42ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 19ms\n GET /messages 200 in 55ms\n GET /campaigns 200 in 53ms\n GET /contacts 200 in 52ms\n GET /integracoes 200 in 100ms\n GET /me/preferences/ui_theme_mode 200 in 23ms\n GET /me/preferences/global_filters 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 22ms\n GET /me/preferences/global_filters 200 in 18ms\n GET /me/preferences/knowledge_docs_v1 200 in 12ms\n GET /me/preferences/knowledge_docs_v1 200 in 11ms\n GET /integracoes 200 in 78ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 24ms\n GET /me/preferences/ui_theme_mode 200 in 15ms\n GET /me/preferences/global_filters 200 in 21ms\n PUT /me/preferences/ui_theme_mode 200 in 14ms\n GET /campaigns 200 in 20ms\n GET /contacts 200 in 24ms\n GET /campaigns 200 in 18ms\n GET /contacts 200 in 16ms\n GET /integracoes 200 in 87ms\n GET /me/preferences/ui_theme_mode 200 in 26ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 23ms\n GET /me/preferences/global_filters 200 in 18ms\n GET /contacts 200 in 13ms\n GET /contacts 200 in 12ms\n GET /messages 200 in 23ms\n GET /contacts 200 in 29ms\n GET /campaigns 200 in 30ms\n GET /messages 200 in 27ms\n GET /contacts 200 in 28ms\n GET /campaigns 200 in 30ms\n GET /integracoes 200 in 66ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 24ms\n GET /me/preferences/ui_theme_mode 200 in 19ms\n GET /me/preferences/global_filters 200 in 19ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 17ms\n GET /messages 200 in 21ms\n GET /campaigns 200 in 23ms\n ○ Compiling /configuracoes ...\n ✓ Compiled /configuracoes in 667ms (659 modules)\n GET /configuracoes 200 in 787ms\n GET /messages 200 in 49ms\n GET /campaigns 200 in 57ms\n GET /contacts 200 in 60ms\n GET /me/preferences/ui_theme_mode 200 in 76ms\n GET /me/preferences/global_filters 200 in 75ms\n GET /me/preferences/company_profile_v1 200 in 71ms\n GET /messages 200 in 73ms\n GET /campaigns 200 in 49ms\n GET /contacts 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 48ms\n GET /me/preferences/global_filters 200 in 48ms\n GET /me/preferences/company_profile_v1 200 in 46ms\n GET /configuracoes 200 in 90ms\n GET /messages 200 in 34ms\n GET /campaigns 200 in 38ms\n GET /contacts 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 53ms\n GET /me/preferences/global_filters 200 in 52ms\n GET /me/preferences/company_profile_v1 200 in 48ms\n GET /messages 200 in 59ms\n GET /campaigns 200 in 37ms\n GET /contacts 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 36ms\n GET /me/preferences/global_filters 200 in 35ms\n GET /me/preferences/company_profile_v1 200 in 35ms\n GET /messages 200 in 36ms\n GET /campaigns 200 in 42ms\n GET /contacts 200 in 43ms\n GET /me/preferences/report_schedules_v1 200 in 56ms\n GET /messages 200 in 52ms\n GET /campaigns 200 in 49ms\n GET /contacts 200 in 50ms\n GET /me/preferences/report_schedules_v1 200 in 36ms\n GET /configuracoes 200 in 79ms\n GET /messages 200 in 30ms\n GET /campaigns 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 48ms\n GET /me/preferences/global_filters 200 in 48ms\n GET /me/preferences/company_profile_v1 200 in 45ms\n GET /contacts 200 in 49ms\n GET /messages 200 in 58ms\n GET /campaigns 200 in 41ms\n GET /contacts 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 40ms\n GET /me/preferences/global_filters 200 in 39ms\n GET /me/preferences/company_profile_v1 200 in 38ms\n GET /me/preferences/knowledge_docs_v1 200 in 19ms\n GET /me/preferences/knowledge_docs_v1 200 in 12ms\n GET /configuracoes 200 in 77ms\n GET /messages 200 in 33ms\n GET /campaigns 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/company_profile_v1 200 in 42ms\n GET /contacts 200 in 51ms\n GET /messages 200 in 59ms\n GET /contacts 200 in 39ms\n GET /campaigns 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 41ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /me/preferences/company_profile_v1 200 in 40ms\n PUT /me/preferences/ui_theme_mode 200 in 13ms\n GET /campaigns 200 in 18ms\n GET /contacts 200 in 22ms\n GET /campaigns 200 in 19ms\n GET /contacts 200 in 17ms\n GET /configuracoes 200 in 59ms\n GET /messages 200 in 36ms\n GET /campaigns 200 in 37ms\n GET /contacts 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /me/preferences/company_profile_v1 200 in 51ms\n GET /messages 200 in 65ms\n GET /campaigns 200 in 47ms\n GET /contacts 200 in 49ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 46ms\n GET /me/preferences/company_profile_v1 200 in 44ms\n GET /contacts 200 in 12ms\n GET /contacts 200 in 13ms\n GET /configuracoes 200 in 77ms\n GET /messages 200 in 30ms\n GET /campaigns 200 in 35ms\n GET /contacts 200 in 36ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/company_profile_v1 200 in 44ms\n GET /messages 200 in 62ms\n GET /campaigns 200 in 46ms\n GET /contacts 200 in 48ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/company_profile_v1 200 in 44ms\n GET /messages 200 in 24ms\n GET /contacts 200 in 33ms\n GET /campaigns 200 in 35ms\n GET /messages 200 in 34ms\n GET /contacts 200 in 28ms\n GET /campaigns 200 in 31ms\n GET /configuracoes 200 in 33ms\n GET /messages 200 in 38ms\n GET /campaigns 200 in 42ms\n GET /contacts 200 in 42ms\n GET /me/preferences/ui_theme_mode 200 in 55ms\n GET /me/preferences/global_filters 200 in 55ms\n GET /me/preferences/company_profile_v1 200 in 54ms\n GET /messages 200 in 70ms\n GET /contacts 200 in 48ms\n GET /campaigns 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /me/preferences/global_filters 200 in 42ms\n GET /me/preferences/company_profile_v1 200 in 42ms\n PUT /me/preferences/checkpoint__configuracoes 200 in 13ms\n GET /messages 200 in 26ms\n GET /campaigns 200 in 31ms\n GET /contacts 200 in 34ms\n GET /me/preferences/company_profile_v1 200 in 40ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 18ms\n GET /campaigns 200 in 21ms\n GET /messages 200 in 22ms\n ○ Compiling /login ...\n ✓ Compiled /login in 536ms (665 modules)\n GET /login 200 in 624ms\n ○ Compiling /register ...\n ✓ Compiled /register in 563ms (671 modules)\n GET /register 200 in 629ms\n",
+  "summary": {
+    "runMode": "sweep",
+    "routesChecked": 22,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 0,
+    "journeysFailed": 0,
+    "failuresTotal": 0,
+    "consoleErrorsUnique": 0,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T01:12:15.622Z"
+}

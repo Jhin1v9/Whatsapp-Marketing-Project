@@ -1,0 +1,242 @@
+﻿{
+  "startedAt": "2026-03-07T01:02:17.417Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [],
+  "routeSweep": [
+    {
+      "route": "/",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 18,
+      "clicksOk": 13,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/inbox",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/campanhas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 20,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/envio-massa",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 18,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/automacoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/crm",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes/novo",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 17,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/pipeline-kanban",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/tarefas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/agenda",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/ia-studio",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/templates",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 22,
+      "clicksOk": 22,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/base-conhecimento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/analytics",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 14,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/relatorios",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 15,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/faturamento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/compliance",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/integracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/configuracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/login",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/register",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/agenda. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/ia-studio. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/base-conhecimento. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/compliance. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/integracoes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "serverLogsTail": " 32ms\n GET /campaigns 200 in 36ms\n GET /contacts 200 in 38ms\n GET /me/preferences/report_schedules_v1 200 in 47ms\n GET /messages 200 in 48ms\n GET /campaigns 200 in 50ms\n GET /contacts 200 in 51ms\n GET /me/preferences/report_schedules_v1 200 in 50ms\n GET /compliance 200 in 74ms\n GET /contacts 200 in 28ms\n GET /messages 200 in 31ms\n GET /campaigns 200 in 32ms\n GET /me/preferences/ui_theme_mode 200 in 42ms\n GET /me/preferences/global_filters 200 in 42ms\n GET /contacts 200 in 53ms\n GET /messages 200 in 40ms\n GET /campaigns 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 40ms\n GET /me/preferences/global_filters 200 in 39ms\n GET /me/preferences/knowledge_docs_v1 200 in 24ms\n GET /me/preferences/knowledge_docs_v1 200 in 20ms\n GET /compliance 200 in 54ms\n GET /contacts 200 in 33ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 52ms\n GET /contacts 200 in 48ms\n GET /messages 200 in 32ms\n GET /campaigns 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 32ms\n GET /me/preferences/global_filters 200 in 32ms\n PUT /me/preferences/ui_theme_mode 200 in 14ms\n GET /campaigns 200 in 16ms\n GET /contacts 200 in 20ms\n GET /campaigns 200 in 18ms\n GET /contacts 200 in 17ms\n GET /compliance 200 in 61ms\n GET /contacts 200 in 26ms\n GET /messages 200 in 30ms\n GET /campaigns 200 in 30ms\n GET /me/preferences/ui_theme_mode 200 in 40ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /contacts 200 in 49ms\n GET /messages 200 in 37ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 37ms\n GET /me/preferences/global_filters 200 in 35ms\n GET /contacts 200 in 9ms\n GET /contacts 200 in 39ms\n GET /compliance 200 in 41ms\n GET /contacts 200 in 31ms\n GET /messages 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 56ms\n GET /me/preferences/global_filters 200 in 55ms\n GET /campaigns 200 in 59ms\n GET /contacts 200 in 67ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 42ms\n GET /me/preferences/ui_theme_mode 200 in 42ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /messages 200 in 24ms\n GET /contacts 200 in 29ms\n GET /campaigns 200 in 30ms\n GET /messages 200 in 27ms\n GET /contacts 200 in 22ms\n GET /campaigns 200 in 23ms\n GET /compliance 200 in 66ms\n GET /contacts 200 in 33ms\n GET /messages 200 in 36ms\n GET /campaigns 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 49ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /contacts 200 in 62ms\n GET /campaigns 200 in 44ms\n GET /messages 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 50ms\n GET /contacts 200 in 40ms\n GET /campaigns 200 in 34ms\n GET /messages 200 in 35ms\n GET /contacts 200 in 20ms\n GET /contacts 200 in 23ms\n GET /campaigns 200 in 25ms\n GET /messages 200 in 26ms\n ○ Compiling /integracoes ...\n ✓ Compiled /integracoes in 622ms (663 modules)\n GET /integracoes 200 in 756ms\n GET /me/preferences/ui_theme_mode 200 in 29ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/ui_theme_mode 200 in 24ms\n GET /me/preferences/global_filters 200 in 20ms\n GET /integracoes 200 in 49ms\n GET /me/preferences/ui_theme_mode 200 in 30ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 20ms\n GET /me/preferences/global_filters 200 in 16ms\n GET /messages 200 in 42ms\n GET /campaigns 200 in 47ms\n GET /contacts 200 in 48ms\n GET /me/preferences/report_schedules_v1 200 in 49ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 43ms\n GET /contacts 200 in 44ms\n GET /me/preferences/report_schedules_v1 200 in 42ms\n GET /integracoes 200 in 79ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 25ms\n GET /me/preferences/ui_theme_mode 200 in 14ms\n GET /me/preferences/global_filters 200 in 20ms\n GET /me/preferences/knowledge_docs_v1 200 in 13ms\n GET /me/preferences/knowledge_docs_v1 200 in 14ms\n GET /integracoes 200 in 80ms\n GET /me/preferences/ui_theme_mode 200 in 26ms\n GET /me/preferences/global_filters 200 in 25ms\n GET /me/preferences/ui_theme_mode 200 in 17ms\n GET /me/preferences/global_filters 200 in 16ms\n PUT /me/preferences/ui_theme_mode 200 in 12ms\n GET /campaigns 200 in 17ms\n GET /contacts 200 in 20ms\n GET /campaigns 200 in 16ms\n GET /contacts 200 in 18ms\n GET /integracoes 200 in 55ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 37ms\n GET /me/preferences/global_filters 200 in 24ms\n GET /contacts 200 in 11ms\n GET /contacts 200 in 12ms\n GET /messages 200 in 24ms\n GET /campaigns 200 in 30ms\n GET /contacts 200 in 35ms\n GET /messages 200 in 26ms\n GET /campaigns 200 in 21ms\n GET /contacts 200 in 22ms\n GET /integracoes 200 in 63ms\n GET /me/preferences/ui_theme_mode 200 in 22ms\n GET /me/preferences/global_filters 200 in 21ms\n GET /me/preferences/ui_theme_mode 200 in 16ms\n GET /me/preferences/global_filters 200 in 15ms\n ✓ Compiled /integrations/health/[provider] in 297ms (351 modules)\n POST /integrations/health/meta_whatsapp 400 in 907ms\n GET /contacts 200 in 21ms\n GET /contacts 200 in 19ms\n GET /messages 200 in 23ms\n GET /campaigns 200 in 26ms\n ○ Compiling /configuracoes ...\n ✓ Compiled /configuracoes in 1124ms (675 modules)\n GET /configuracoes 200 in 1338ms\n GET /messages 200 in 54ms\n GET /campaigns 200 in 60ms\n GET /contacts 200 in 64ms\n GET /me/preferences/ui_theme_mode 200 in 78ms\n GET /me/preferences/global_filters 200 in 77ms\n GET /me/preferences/company_profile_v1 200 in 74ms\n GET /messages 200 in 72ms\n GET /campaigns 200 in 54ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 53ms\n GET /me/preferences/company_profile_v1 200 in 52ms\n GET /contacts 200 in 71ms\n GET /configuracoes 200 in 57ms\n GET /messages 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 72ms\n GET /me/preferences/global_filters 200 in 69ms\n GET /me/preferences/company_profile_v1 200 in 67ms\n GET /campaigns 200 in 78ms\n GET /contacts 200 in 81ms\n GET /messages 200 in 73ms\n GET /campaigns 200 in 45ms\n GET /contacts 200 in 50ms\n GET /me/preferences/ui_theme_mode 200 in 49ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /me/preferences/company_profile_v1 200 in 48ms\n GET /messages 200 in 35ms\n GET /campaigns 200 in 39ms\n GET /contacts 200 in 40ms\n GET /me/preferences/report_schedules_v1 200 in 47ms\n GET /messages 200 in 43ms\n GET /campaigns 200 in 39ms\n GET /contacts 200 in 41ms\n GET /me/preferences/report_schedules_v1 200 in 31ms\n GET /configuracoes 200 in 74ms\n GET /me/preferences/ui_theme_mode 200 in 28ms\n GET /messages 200 in 50ms\n GET /campaigns 200 in 48ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /me/preferences/company_profile_v1 200 in 49ms\n GET /contacts 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 47ms\n GET /messages 200 in 43ms\n GET /campaigns 200 in 47ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/company_profile_v1 200 in 44ms\n GET /contacts 200 in 53ms\n GET /me/preferences/knowledge_docs_v1 200 in 14ms\n GET /me/preferences/knowledge_docs_v1 200 in 15ms\n GET /configuracoes 200 in 60ms\n GET /messages 200 in 28ms\n GET /campaigns 200 in 32ms\n GET /contacts 200 in 33ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/company_profile_v1 200 in 42ms\n GET /messages 200 in 55ms\n GET /campaigns 200 in 40ms\n GET /contacts 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 37ms\n GET /me/preferences/company_profile_v1 200 in 37ms\n PUT /me/preferences/ui_theme_mode 200 in 13ms\n GET /campaigns 200 in 21ms\n GET /contacts 200 in 25ms\n GET /campaigns 200 in 18ms\n GET /contacts 200 in 15ms\n GET /configuracoes 200 in 60ms\n GET /messages 200 in 28ms\n GET /contacts 200 in 35ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 50ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /me/preferences/company_profile_v1 200 in 50ms\n GET /messages 200 in 70ms\n GET /contacts 200 in 48ms\n GET /campaigns 200 in 53ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/company_profile_v1 200 in 41ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 23ms\n GET /configuracoes 200 in 79ms\n GET /messages 200 in 29ms\n GET /campaigns 200 in 32ms\n GET /contacts 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/company_profile_v1 200 in 43ms\n GET /messages 200 in 63ms\n GET /campaigns 200 in 46ms\n GET /contacts 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 42ms\n GET /me/preferences/global_filters 200 in 42ms\n GET /me/preferences/company_profile_v1 200 in 41ms\n GET /messages 200 in 20ms\n GET /contacts 200 in 25ms\n GET /campaigns 200 in 26ms\n GET /messages 200 in 40ms\n GET /contacts 200 in 40ms\n GET /campaigns 200 in 45ms\n GET /configuracoes 200 in 91ms\n GET /messages 200 in 34ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 50ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /me/preferences/company_profile_v1 200 in 48ms\n GET /contacts 200 in 53ms\n GET /messages 200 in 64ms\n GET /campaigns 200 in 43ms\n GET /contacts 200 in 44ms\n GET /me/preferences/ui_theme_mode 200 in 43ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/company_profile_v1 200 in 43ms\n PUT /me/preferences/checkpoint__configuracoes 200 in 11ms\n GET /messages 200 in 26ms\n GET /campaigns 200 in 30ms\n GET /contacts 200 in 31ms\n GET /me/preferences/company_profile_v1 200 in 36ms\n GET /contacts 200 in 9ms\n GET /contacts 200 in 20ms\n GET /campaigns 200 in 22ms\n GET /messages 200 in 23ms\n ○ Compiling /login ...\n ✓ Compiled /login in 538ms (667 modules)\n GET /login 200 in 621ms\n ✓ Compiled /register in 313ms (359 modules)\n ✓ Compiled in 454ms (308 modules)\n POST /auth/login 401 in 983ms\n GET /register 200 in 754ms\n",
+  "summary": {
+    "runMode": "sweep",
+    "routesChecked": 22,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 0,
+    "journeysFailed": 0,
+    "failuresTotal": 0,
+    "consoleErrorsUnique": 7,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/agenda. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/ia-studio. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/base-conhecimento. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/compliance. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/integracoes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T01:06:12.952Z"
+}

@@ -1,0 +1,123 @@
+{
+  "startedAt": "2026-03-07T03:46:03.772Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "artifactDir": "artifacts/ui-buyer-audit-1772855163770",
+  "seed": {
+    "contacts": 3
+  },
+  "steps": [
+    {
+      "name": "dashboard_value_clarity",
+      "ok": true,
+      "details": {
+        "header": "Plataforma Conversational Marketing",
+        "sub": "SaaS Core",
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/01-dashboard.png"
+      }
+    },
+    {
+      "name": "create_client",
+      "ok": true,
+      "details": {
+        "buyerName": "Buyer 173069",
+        "buyerPhonePretty": "+34 612 777 333",
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/02-create-client.png"
+      }
+    },
+    {
+      "name": "client_visible_in_list",
+      "ok": true,
+      "details": {
+        "listed": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/03-client-list.png"
+      }
+    },
+    {
+      "name": "campaign_create_and_execute",
+      "ok": true,
+      "details": {
+        "created": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/04-campaigns.png"
+      }
+    },
+    {
+      "name": "bulk_send_with_cadence",
+      "ok": true,
+      "details": {
+        "completed": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/05-bulk-send.png"
+      }
+    },
+    {
+      "name": "inbox_customer_actions",
+      "ok": true,
+      "details": {
+        "sent": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/06-inbox-actions.png"
+      }
+    },
+    {
+      "name": "templates_and_ia_loop",
+      "ok": true,
+      "details": {
+        "generated": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/07-templates-ia.png"
+      }
+    },
+    {
+      "name": "integrations_sense_check",
+      "ok": true,
+      "details": {
+        "hasFeedback": true,
+        "screenshot": "artifacts/ui-buyer-audit-1772855163770/08-integrations.png"
+      }
+    }
+  ],
+  "blockers": [],
+  "visualSignals": [
+    {
+      "area": "clientes",
+      "detail": "Contato persistiu em dados, mas feedback visual na grade demorou ou nao foi imediato."
+    }
+  ],
+  "metrics": {
+    "emptyPlaceholders": [
+      {
+        "route": "/",
+        "count": 1
+      },
+      {
+        "route": "/clientes/novo",
+        "count": 4
+      },
+      {
+        "route": "/clientes",
+        "count": 2
+      },
+      {
+        "route": "/campanhas",
+        "count": 1
+      },
+      {
+        "route": "/envio-massa",
+        "count": 4
+      },
+      {
+        "route": "/inbox",
+        "count": 3
+      },
+      {
+        "route": "/ia-studio",
+        "count": 6
+      }
+    ]
+  },
+  "score": {
+    "reliability": 100,
+    "uxClarity": 79,
+    "buyReadiness": 94
+  },
+  "verdict": "APTO_PARA_COMPRA",
+  "serverLogsTail": "\n> @app/web@0.1.0 dev\n> next dev -p 3000\n\n  ▲ Next.js 14.2.20\n  - Local:        http://localhost:3000\n\n ✓ Starting...\n ✓ Ready in 3.1s\n ○ Compiling / ...\n ✓ Compiled / in 3.1s (538 modules)\n GET / 200 in 3425ms\n ✓ Compiled /contacts in 304ms (297 modules)\n POST /contacts 201 in 487ms\n POST /contacts 201 in 14ms\n POST /contacts 201 in 12ms\n ✓ Compiled /messages/simulate-inbound in 105ms (299 modules)\n POST /messages/simulate-inbound 201 in 206ms\n GET / 200 in 136ms\n ✓ Compiled /campaigns in 286ms (301 modules)\n ✓ Compiled (306 modules)\n GET /contacts 200 in 488ms\n GET /messages 200 in 509ms\n GET /campaigns 200 in 538ms\n GET /contacts 200 in 69ms\n GET /messages 200 in 31ms\n GET /campaigns 200 in 37ms\n ⨯ TypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:81:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:86:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError',\n  page: '/me/preferences/global_filters'\n}\n ⨯ TypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:81:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:86:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError',\n  page: '/me/preferences/global_filters'\n}\n ○ Compiling /_error ...\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\DumpStack.log.tmp'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\pagefile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\System Volume Information'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\swapfile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\DumpStack.log.tmp'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\pagefile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\swapfile.sys'\nWatchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\\System Volume Information'\n ✓ Compiled /_error in 1681ms (801 modules)\n GET /me/preferences/ui_theme_mode 500 in 2892ms\n GET /me/preferences/global_filters 500 in 2892ms\n GET /me/preferences/global_filters 200 in 236ms\n GET /clientes/novo 200 in 2429ms\n GET /me/preferences/ui_theme_mode 200 in 263ms\n GET /me/preferences/global_filters 200 in 261ms\n POST /contacts 201 in 185ms\n GET /me/preferences/ui_theme_mode 200 in 138ms\n GET /me/preferences/global_filters 200 in 136ms\n ✓ Compiled /contacts/[contactId]/consents in 445ms (353 modules)\n GET /contacts 200 in 512ms\n POST /contacts/contact_4/consents 201 in 1459ms\n ✓ Compiled /clientes in 503ms (809 modules)\n GET /clientes 200 in 690ms\n GET /contacts 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 58ms\n GET /me/preferences/global_filters 200 in 57ms\n GET /contacts 200 in 51ms\n GET /contacts 200 in 44ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 30ms\n ✓ Compiled /campanhas in 409ms (815 modules)\n GET /campanhas 200 in 520ms\n GET /campaigns 200 in 44ms\n GET /contacts 200 in 54ms\n GET /me/preferences/ui_theme_mode 200 in 69ms\n GET /me/preferences/global_filters 200 in 69ms\n GET /campaigns 200 in 59ms\n GET /contacts 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 37ms\n POST /campaigns 201 in 15ms\n ✓ Compiled /campaigns/[campaignId]/ai-drafts in 289ms (363 modules)\n ○ Compiling /envio-massa ...\n POST /campaigns/campaign_1/ai-drafts 200 in 1176ms\n ✓ Compiled /envio-massa in 578ms (823 modules)\n GET /envio-massa 200 in 736ms\n ✓ Compiled /campaigns/[campaignId]/approve in 431ms (369 modules)\n GET /contacts 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 53ms\n GET /contacts 200 in 53ms\n GET /me/preferences/ui_theme_mode 200 in 35ms\n GET /me/preferences/global_filters 200 in 34ms\n ✓ Compiled /messages/send-whatsapp in 299ms (371 modules)\n POST /messages/send-whatsapp 200 in 385ms\n ✓ Compiled /inbox in 437ms (833 modules)\n GET /inbox 200 in 537ms\n GET /messages 200 in 47ms\n GET /contacts 200 in 55ms\n GET /campaigns 200 in 62ms\n GET /me/preferences/ui_theme_mode 200 in 78ms\n GET /me/preferences/global_filters 200 in 78ms\n GET /messages 200 in 71ms\n GET /contacts 200 in 43ms\n GET /campaigns 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /messages 200 in 24ms\n GET /contacts 200 in 28ms\n GET /campaigns 200 in 31ms\n POST /messages/send-whatsapp 200 in 21ms\n GET /messages 200 in 21ms\n GET /contacts 200 in 24ms\n GET /campaigns 200 in 26ms\n GET /messages 200 in 11ms\n ○ Compiling /templates ...\n ✓ Compiled /templates in 619ms (839 modules)\n GET /templates 200 in 718ms\n GET /me/preferences/ui_theme_mode 200 in 35ms\n GET /me/preferences/global_filters 200 in 50ms\n GET /me/preferences/templates_library_v1 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 33ms\n GET /me/preferences/templates_library_v1 200 in 32ms\n GET /campaigns 200 in 51ms\n GET /campaigns 200 in 13ms\n PUT /me/preferences/templates_library_v1 200 in 14ms\n GET /me/preferences/templates_library_v1 200 in 18ms\n ○ Compiling /ia-studio ...\n ✓ Compiled /ia-studio in 521ms (845 modules)\n GET /ia-studio 200 in 635ms\n GET /campaigns 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 60ms\n GET /me/preferences/global_filters 200 in 60ms\n GET /campaigns 200 in 54ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 30ms\n POST /campaigns/campaign_1/ai-drafts 200 in 36ms\n GET /campaigns 200 in 17ms\n GET /campaigns 200 in 12ms\n ○ Compiling /integracoes ...\n ✓ Compiled /integracoes in 517ms (853 modules)\n GET /integracoes 200 in 634ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 25ms\n",
+  "finishedAt": "2026-03-07T03:46:36.885Z"
+}

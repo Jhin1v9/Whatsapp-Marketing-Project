@@ -1,0 +1,88 @@
+{
+  "startedAt": "2026-03-07T00:31:28.764Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [
+    {
+      "name": "create_client_ui",
+      "ok": true,
+      "details": {
+        "userName": "Auditoria 496201",
+        "userPhonePretty": "+34 612 340 123"
+      }
+    },
+    {
+      "name": "verify_client_on_list",
+      "ok": true,
+      "details": {
+        "listedPhone": "+34612340123"
+      }
+    },
+    {
+      "name": "campaign_create_and_send",
+      "ok": true,
+      "details": {
+        "campaignName": "camp_496201"
+      }
+    },
+    {
+      "name": "bulk_send_flow",
+      "ok": true,
+      "details": {
+        "message": "bulk_send_done"
+      }
+    },
+    {
+      "name": "inbox_client_actions",
+      "ok": false,
+      "details": "Error: locator.click: Error: strict mode violation: locator('article.section-card').filter({ hasText: 'Acoes do Cliente' }).first().getByRole('button', { name: 'Enviar' }) resolved to 2 elements:\n    1) <button type=\"button\" class=\"rounded-xl border px-3 py-2 text-sm font-semibold border-accent/50 bg-accent/10 text-accent\">Enviar msg</button> aka getByRole('button', { name: 'Enviar msg' })\n    2) <button type=\"button\" class=\"rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold disabled:opacity-60\">Enviar</button> aka getByRole('button', { name: 'Enviar', exact: true })\n\nCall log:\n\u001b[2m  - waiting for locator('article.section-card').filter({ hasText: 'Acoes do Cliente' }).first().getByRole('button', { name: 'Enviar' })\u001b[22m\n"
+    },
+    {
+      "name": "templates_crud",
+      "ok": false,
+      "details": "Error: locator.click: Error: strict mode violation: locator('section.section-card').nth(1).getByRole('button', { name: 'Aprovar' }) resolved to 2 elements:\n    1) <button class=\"rounded-lg border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:opacity-60\">Aprovar</button> aka getByRole('button', { name: 'Aprovar', exact: true })\n    2) <button class=\"rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:opacity-60\">Aprovar lote</button> aka getByRole('button', { name: 'Aprovar lote' })\n\nCall log:\n\u001b[2m  - waiting for locator('section.section-card').nth(1).getByRole('button', { name: 'Aprovar' })\u001b[22m\n"
+    },
+    {
+      "name": "ia_studio_flow",
+      "ok": false,
+      "details": "Error: Aprovacao de variacao IA falhou."
+    }
+  ],
+  "routeSweep": [],
+  "failures": [
+    {
+      "area": "journey",
+      "step": "inbox_client_actions",
+      "detail": "Error: locator.click: Error: strict mode violation: locator('article.section-card').filter({ hasText: 'Acoes do Cliente' }).first().getByRole('button', { name: 'Enviar' }) resolved to 2 elements:\n    1) <button type=\"button\" class=\"rounded-xl border px-3 py-2 text-sm font-semibold border-accent/50 bg-accent/10 text-accent\">Enviar msg</button> aka getByRole('button', { name: 'Enviar msg' })\n    2) <button type=\"button\" class=\"rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold disabled:opacity-60\">Enviar</button> aka getByRole('button', { name: 'Enviar', exact: true })\n\nCall log:\n\u001b[2m  - waiting for locator('article.section-card').filter({ hasText: 'Acoes do Cliente' }).first().getByRole('button', { name: 'Enviar' })\u001b[22m\n"
+    },
+    {
+      "area": "journey",
+      "step": "templates_crud",
+      "detail": "Error: locator.click: Error: strict mode violation: locator('section.section-card').nth(1).getByRole('button', { name: 'Aprovar' }) resolved to 2 elements:\n    1) <button class=\"rounded-lg border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:opacity-60\">Aprovar</button> aka getByRole('button', { name: 'Aprovar', exact: true })\n    2) <button class=\"rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:opacity-60\">Aprovar lote</button> aka getByRole('button', { name: 'Aprovar lote' })\n\nCall log:\n\u001b[2m  - waiting for locator('section.section-card').nth(1).getByRole('button', { name: 'Aprovar' })\u001b[22m\n"
+    },
+    {
+      "area": "journey",
+      "step": "ia_studio_flow",
+      "detail": "Error: Aprovacao de variacao IA falhou."
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "serverLogsTail": "\n> @app/web@0.1.0 dev\n> next dev -p 3000\n\n  ▲ Next.js 14.2.20\n  - Local:        http://localhost:3000\n\n ✓ Starting...\n ✓ Ready in 3s\n ○ Compiling / ...\n ✓ Compiled / in 1249ms (524 modules)\n GET / 200 in 1596ms\n ✓ Compiled /contacts in 226ms (294 modules)\n POST /contacts 201 in 409ms\n POST /contacts 201 in 14ms\n POST /contacts 201 in 13ms\n ✓ Compiled /messages/simulate-inbound in 95ms (296 modules)\n POST /messages/simulate-inbound 201 in 195ms\n ✓ Compiled /campaigns in 208ms (298 modules)\n POST /campaigns 201 in 255ms\n ✓ Compiled /clientes/novo in 391ms (567 modules)\n GET /clientes/novo 200 in 577ms\n ✓ Compiled /me/preferences/[key] in 313ms (305 modules)\n POST /contacts 201 in 457ms\n ✓ Compiled /contacts/[contactId]/consents in 186ms (307 modules)\n GET /me/preferences/ui_theme_mode 200 in 1114ms\n GET /me/preferences/global_filters 200 in 1113ms\n GET /me/preferences/ui_theme_mode 200 in 31ms\n GET /me/preferences/global_filters 200 in 30ms\n POST /contacts/contact_4/consents 201 in 901ms\n ✓ Compiled /clientes in 348ms (578 modules)\n GET /clientes 200 in 492ms\n GET /contacts 200 in 33ms\n GET /me/preferences/ui_theme_mode 200 in 49ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /contacts 200 in 45ms\n GET /me/preferences/ui_theme_mode 200 in 28ms\n GET /me/preferences/global_filters 200 in 27ms\n ✓ Compiled /campanhas in 408ms (584 modules)\n GET /campanhas 200 in 521ms\n GET /campaigns 200 in 43ms\n GET /me/preferences/ui_theme_mode 200 in 63ms\n GET /me/preferences/global_filters 200 in 62ms\n GET /contacts 200 in 72ms\n GET /campaigns 200 in 58ms\n GET /contacts 200 in 32ms\n GET /me/preferences/ui_theme_mode 200 in 32ms\n GET /me/preferences/global_filters 200 in 32ms\n POST /campaigns 201 in 16ms\n ○ Compiling /campaigns/[campaignId]/ai-drafts ...\n ✓ Compiled /campaigns/[campaignId]/ai-drafts in 584ms (592 modules)\n GET /envio-massa 200 in 745ms\n POST /campaigns/campaign_2/ai-drafts 200 in 690ms\n GET /contacts 200 in 29ms\n GET /me/preferences/ui_theme_mode 200 in 93ms\n GET /me/preferences/global_filters 200 in 92ms\n GET /contacts 200 in 121ms\n GET /me/preferences/ui_theme_mode 200 in 61ms\n GET /me/preferences/global_filters 200 in 62ms\n ✓ Compiled /messages/send-whatsapp in 285ms (323 modules)\n POST /messages/send-whatsapp 200 in 363ms\n ✓ Compiled /inbox in 493ms (600 modules)\n GET /inbox 200 in 691ms\n ✓ Compiled /messages in 258ms (329 modules)\n GET /campaigns 200 in 529ms\n GET /contacts 200 in 530ms\n GET /me/preferences/ui_theme_mode 200 in 529ms\n GET /me/preferences/global_filters 200 in 529ms\n GET /messages 200 in 560ms\n GET /campaigns 200 in 42ms\n GET /contacts 200 in 48ms\n GET /me/preferences/ui_theme_mode 200 in 63ms\n GET /me/preferences/global_filters 200 in 62ms\n GET /messages 200 in 52ms\n GET /campaigns 200 in 52ms\n GET /contacts 200 in 51ms\n GET /messages 200 in 38ms\n ✓ Compiled /templates in 413ms (608 modules)\n GET /templates 200 in 522ms\n GET /me/preferences/ui_theme_mode 200 in 32ms\n GET /me/preferences/global_filters 200 in 45ms\n GET /me/preferences/templates_library_v1 200 in 42ms\n GET /me/preferences/ui_theme_mode 200 in 34ms\n GET /campaigns 200 in 37ms\n GET /me/preferences/global_filters 200 in 40ms\n GET /me/preferences/templates_library_v1 200 in 40ms\n PUT /me/preferences/templates_library_v1 200 in 17ms\n GET /campaigns 200 in 19ms\n PUT /me/preferences/templates_library_v1 200 in 14ms\n PUT /me/preferences/templates_library_v1 200 in 24ms\n PUT /me/preferences/templates_library_v1 200 in 13ms\n POST /campaigns 201 in 11ms\n ✓ Compiled /ia-studio in 484ms (614 modules)\n GET /ia-studio 200 in 594ms\n GET /campaigns 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 61ms\n GET /me/preferences/global_filters 200 in 61ms\n GET /campaigns 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 29ms\n GET /me/preferences/global_filters 200 in 28ms\n POST /campaigns/campaign_3/ai-drafts 200 in 22ms\n GET /campaigns 200 in 10ms\n PUT /me/preferences/checkpoint__ia-studio 200 in 19ms\n",
+  "summary": {
+    "runMode": "journeys",
+    "routesChecked": 0,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 7,
+    "journeysFailed": 3,
+    "failuresTotal": 3,
+    "consoleErrorsUnique": 0,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T00:32:06.605Z"
+}

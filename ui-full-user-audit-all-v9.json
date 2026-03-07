@@ -1,0 +1,281 @@
+﻿{
+  "startedAt": "2026-03-07T01:57:25.839Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [
+    {
+      "name": "create_client_ui",
+      "ok": true,
+      "details": {
+        "userName": "Auditoria 655073",
+        "userPhonePretty": "+34 612 340 123"
+      }
+    },
+    {
+      "name": "verify_client_on_list",
+      "ok": true,
+      "details": {
+        "listedPhone": "+34612340123"
+      }
+    },
+    {
+      "name": "campaign_create_and_send",
+      "ok": true,
+      "details": {
+        "campaignName": "camp_655073"
+      }
+    },
+    {
+      "name": "bulk_send_flow",
+      "ok": true,
+      "details": {
+        "message": "bulk_send_done"
+      }
+    },
+    {
+      "name": "inbox_client_actions",
+      "ok": true,
+      "details": {
+        "inboxActions": "ok"
+      }
+    },
+    {
+      "name": "templates_crud",
+      "ok": true,
+      "details": {
+        "templateName": "tpl_655073"
+      }
+    },
+    {
+      "name": "ia_studio_flow",
+      "ok": true,
+      "details": {
+        "iaStudio": "ok"
+      }
+    }
+  ],
+  "routeSweep": [
+    {
+      "route": "/",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 18,
+      "clicksOk": 13,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/inbox",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 18,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/campanhas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 20,
+      "clicksOk": 20,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/envio-massa",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 18,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/automacoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 19,
+      "clicksOk": 19,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/crm",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/clientes/novo",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/pipeline-kanban",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/tarefas",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/agenda",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 11,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/ia-studio",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/templates",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 22,
+      "clicksOk": 22,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/base-conhecimento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/analytics",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 14,
+      "clicksOk": 14,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/relatorios",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 15,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/faturamento",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 12,
+      "clicksOk": 11,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/compliance",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 15,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/integracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 17,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/configuracoes",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 16,
+      "clicksOk": 16,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/login",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    },
+    {
+      "route": "/register",
+      "loadOk": true,
+      "loadError": "",
+      "buttonsDiscovered": 1,
+      "clicksOk": 1,
+      "clicksFailed": 0,
+      "failures": []
+    }
+  ],
+  "failures": [],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/automacoes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)"
+  ],
+  "serverLogsTail": "me_mode 200 in 71ms\n GET /me/preferences/global_filters 200 in 70ms\n GET /contacts 200 in 58ms\n GET /campaigns 200 in 36ms\n GET /messages 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 37ms\n GET /me/preferences/global_filters 200 in 35ms\n GET /compliance 200 in 30ms\n GET /contacts 200 in 37ms\n GET /messages 200 in 45ms\n GET /campaigns 200 in 48ms\n GET /me/preferences/ui_theme_mode 200 in 61ms\n GET /me/preferences/global_filters 200 in 61ms\n GET /contacts 200 in 70ms\n GET /messages 200 in 49ms\n GET /campaigns 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 49ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /messages 200 in 39ms\n GET /campaigns 200 in 48ms\n GET /contacts 200 in 49ms\n GET /me/preferences/report_schedules_v1 200 in 50ms\n GET /messages 200 in 44ms\n GET /campaigns 200 in 41ms\n GET /contacts 200 in 65ms\n GET /me/preferences/report_schedules_v1 200 in 57ms\n GET /compliance 200 in 79ms\n GET /contacts 200 in 32ms\n GET /messages 200 in 37ms\n GET /campaigns 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 56ms\n GET /me/preferences/global_filters 200 in 55ms\n GET /contacts 200 in 85ms\n GET /messages 200 in 61ms\n GET /campaigns 200 in 64ms\n GET /me/preferences/ui_theme_mode 200 in 59ms\n GET /me/preferences/global_filters 200 in 58ms\n GET /me/preferences/knowledge_docs_v1 200 in 11ms\n GET /me/preferences/knowledge_docs_v1 200 in 11ms\n GET /compliance 200 in 78ms\n GET /contacts 200 in 28ms\n GET /campaigns 200 in 31ms\n GET /messages 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 44ms\n GET /contacts 200 in 62ms\n GET /campaigns 200 in 39ms\n GET /messages 200 in 42ms\n GET /me/preferences/ui_theme_mode 200 in 39ms\n GET /me/preferences/global_filters 200 in 38ms\n PUT /me/preferences/ui_theme_mode 200 in 11ms\n GET /campaigns 200 in 17ms\n GET /contacts 200 in 22ms\n GET /campaigns 200 in 22ms\n GET /contacts 200 in 21ms\n GET /compliance 200 in 58ms\n GET /contacts 200 in 33ms\n GET /messages 200 in 37ms\n GET /campaigns 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /contacts 200 in 54ms\n GET /messages 200 in 37ms\n GET /campaigns 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 37ms\n GET /contacts 200 in 13ms\n GET /contacts 200 in 12ms\n GET /compliance 200 in 31ms\n GET /contacts 200 in 29ms\n GET /messages 200 in 29ms\n GET /me/preferences/ui_theme_mode 200 in 38ms\n GET /me/preferences/global_filters 200 in 37ms\n GET /campaigns 200 in 42ms\n GET /contacts 200 in 55ms\n GET /messages 200 in 44ms\n GET /campaigns 200 in 45ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /me/preferences/global_filters 200 in 44ms\n GET /messages 200 in 25ms\n GET /contacts 200 in 32ms\n GET /campaigns 200 in 37ms\n GET /messages 200 in 36ms\n GET /contacts 200 in 31ms\n GET /campaigns 200 in 34ms\n GET /compliance 200 in 80ms\n GET /contacts 200 in 36ms\n GET /messages 200 in 36ms\n GET /me/preferences/ui_theme_mode 200 in 45ms\n GET /me/preferences/global_filters 200 in 44ms\n GET /campaigns 200 in 51ms\n GET /contacts 200 in 40ms\n GET /messages 200 in 43ms\n GET /campaigns 200 in 46ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /contacts 200 in 45ms\n GET /messages 200 in 45ms\n GET /campaigns 200 in 50ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 20ms\n GET /campaigns 200 in 25ms\n GET /messages 200 in 25ms\n ○ Compiling /integracoes ...\n ✓ Compiled /integracoes in 587ms (651 modules)\n GET /integracoes 200 in 696ms\n GET /me/preferences/ui_theme_mode 200 in 30ms\n GET /me/preferences/global_filters 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 25ms\n GET /me/preferences/global_filters 200 in 18ms\n GET /integracoes 200 in 77ms\n GET /me/preferences/ui_theme_mode 200 in 27ms\n GET /me/preferences/global_filters 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 20ms\n GET /me/preferences/global_filters 200 in 19ms\n GET /messages 200 in 59ms\n GET /campaigns 200 in 73ms\n GET /contacts 200 in 78ms\n GET /me/preferences/report_schedules_v1 200 in 78ms\n GET /messages 200 in 74ms\n GET /campaigns 200 in 69ms\n GET /contacts 200 in 72ms\n GET /me/preferences/report_schedules_v1 200 in 58ms\n GET /integracoes 200 in 126ms\n GET /me/preferences/ui_theme_mode 200 in 27ms\n GET /me/preferences/global_filters 200 in 26ms\n GET /me/preferences/ui_theme_mode 200 in 13ms\n GET /me/preferences/global_filters 200 in 19ms\n GET /me/preferences/knowledge_docs_v1 200 in 15ms\n GET /me/preferences/knowledge_docs_v1 200 in 11ms\n GET /integracoes 200 in 64ms\n GET /me/preferences/ui_theme_mode 200 in 23ms\n GET /me/preferences/global_filters 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 21ms\n GET /me/preferences/global_filters 200 in 18ms\n PUT /me/preferences/ui_theme_mode 200 in 14ms\n GET /campaigns 200 in 20ms\n GET /contacts 200 in 25ms\n GET /campaigns 200 in 24ms\n GET /contacts 200 in 23ms\n GET /integracoes 200 in 53ms\n GET /me/preferences/ui_theme_mode 200 in 22ms\n GET /me/preferences/global_filters 200 in 21ms\n GET /me/preferences/ui_theme_mode 200 in 18ms\n GET /me/preferences/global_filters 200 in 17ms\n GET /contacts 200 in 13ms\n GET /contacts 200 in 13ms\n GET /messages 200 in 24ms\n GET /contacts 200 in 38ms\n GET /campaigns 200 in 40ms\n GET /messages 200 in 44ms\n GET /contacts 200 in 48ms\n GET /campaigns 200 in 52ms\n GET /integracoes 200 in 75ms\n GET /me/preferences/ui_theme_mode 200 in 21ms\n GET /me/preferences/global_filters 200 in 32ms\n GET /me/preferences/ui_theme_mode 200 in 22ms\n GET /me/preferences/global_filters 200 in 17ms\n GET /contacts 200 in 10ms\n GET /contacts 200 in 21ms\n GET /campaigns 200 in 25ms\n GET /messages 200 in 26ms\n ○ Compiling /configuracoes ...\n ✓ Compiled /configuracoes in 691ms (661 modules)\n GET /configuracoes 200 in 797ms\n GET /messages 200 in 41ms\n GET /me/preferences/ui_theme_mode 200 in 62ms\n GET /me/preferences/global_filters 200 in 58ms\n GET /me/preferences/company_profile_v1 200 in 56ms\n GET /campaigns 200 in 66ms\n GET /contacts 200 in 69ms\n GET /messages 200 in 72ms\n GET /campaigns 200 in 43ms\n GET /contacts 200 in 45ms\n GET /me/preferences/ui_theme_mode 200 in 44ms\n GET /me/preferences/global_filters 200 in 44ms\n GET /me/preferences/company_profile_v1 200 in 43ms\n GET /configuracoes 200 in 78ms\n GET /messages 200 in 34ms\n GET /contacts 200 in 39ms\n GET /campaigns 200 in 43ms\n GET /me/preferences/ui_theme_mode 200 in 52ms\n GET /me/preferences/global_filters 200 in 51ms\n GET /me/preferences/company_profile_v1 200 in 50ms\n GET /messages 200 in 65ms\n GET /contacts 200 in 50ms\n GET /campaigns 200 in 54ms\n GET /me/preferences/ui_theme_mode 200 in 50ms\n GET /me/preferences/global_filters 200 in 49ms\n GET /me/preferences/company_profile_v1 200 in 47ms\n GET /messages 200 in 33ms\n GET /campaigns 200 in 39ms\n GET /contacts 200 in 39ms\n GET /me/preferences/report_schedules_v1 200 in 47ms\n GET /messages 200 in 50ms\n GET /campaigns 200 in 49ms\n GET /contacts 200 in 52ms\n GET /me/preferences/report_schedules_v1 200 in 43ms\n GET /configuracoes 200 in 102ms\n GET /messages 200 in 28ms\n GET /campaigns 200 in 33ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 43ms\n GET /me/preferences/company_profile_v1 200 in 42ms\n GET /contacts 200 in 47ms\n GET /messages 200 in 57ms\n GET /campaigns 200 in 39ms\n GET /contacts 200 in 40ms\n GET /me/preferences/ui_theme_mode 200 in 39ms\n GET /me/preferences/global_filters 200 in 38ms\n GET /me/preferences/company_profile_v1 200 in 38ms\n GET /me/preferences/knowledge_docs_v1 200 in 11ms\n GET /me/preferences/knowledge_docs_v1 200 in 13ms\n GET /configuracoes 200 in 61ms\n GET /messages 200 in 35ms\n GET /me/preferences/ui_theme_mode 200 in 53ms\n GET /me/preferences/global_filters 200 in 53ms\n GET /me/preferences/company_profile_v1 200 in 49ms\n GET /campaigns 200 in 56ms\n GET /contacts 200 in 58ms\n GET /messages 200 in 57ms\n GET /campaigns 200 in 35ms\n GET /contacts 200 in 38ms\n GET /me/preferences/ui_theme_mode 200 in 39ms\n GET /me/preferences/global_filters 200 in 39ms\n GET /me/preferences/company_profile_v1 200 in 39ms\n PUT /me/preferences/ui_theme_mode 200 in 13ms\n GET /campaigns 200 in 16ms\n GET /contacts 200 in 19ms\n GET /campaigns 200 in 19ms\n GET /contacts 200 in 24ms\n GET /configuracoes 200 in 75ms\n GET /messages 200 in 35ms\n GET /campaigns 200 in 40ms\n GET /contacts 200 in 39ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 53ms\n GET /me/preferences/company_profile_v1 200 in 52ms\n GET /messages 200 in 68ms\n GET /campaigns 200 in 49ms\n GET /contacts 200 in 55ms\n GET /me/preferences/ui_theme_mode 200 in 54ms\n GET /me/preferences/global_filters 200 in 54ms\n GET /me/preferences/company_profile_v1 200 in 53ms\n GET /contacts 200 in 22ms\n GET /contacts 200 in 11ms\n GET /messages 200 in 22ms\n GET /contacts 200 in 29ms\n GET /campaigns 200 in 29ms\n GET /messages 200 in 31ms\n GET /contacts 200 in 30ms\n GET /campaigns 200 in 32ms\n GET /configuracoes 200 in 47ms\n GET /messages 200 in 29ms\n GET /campaigns 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 46ms\n GET /me/preferences/global_filters 200 in 46ms\n GET /me/preferences/company_profile_v1 200 in 45ms\n GET /contacts 200 in 50ms\n GET /messages 200 in 64ms\n GET /contacts 200 in 44ms\n GET /campaigns 200 in 51ms\n GET /me/preferences/ui_theme_mode 200 in 51ms\n GET /me/preferences/global_filters 200 in 50ms\n GET /me/preferences/company_profile_v1 200 in 50ms\n PUT /me/preferences/checkpoint__configuracoes 200 in 12ms\n GET /messages 200 in 26ms\n GET /campaigns 200 in 31ms\n GET /contacts 200 in 34ms\n GET /me/preferences/company_profile_v1 200 in 43ms\n GET /contacts 200 in 9ms\n GET /contacts 200 in 31ms\n GET /campaigns 200 in 37ms\n GET /messages 200 in 38ms\n ○ Compiling /login ...\n ✓ Compiled /login in 535ms (667 modules)\n GET /login 200 in 610ms\n ○ Compiling /register ...\n ✓ Compiled /register in 580ms (669 modules)\n GET /register 200 in 652ms\n",
+  "summary": {
+    "runMode": "all",
+    "routesChecked": 22,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 7,
+    "journeysFailed": 0,
+    "failuresTotal": 0,
+    "consoleErrorsUnique": 1,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/automacoes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)"
+  ],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T02:01:51.594Z"
+}

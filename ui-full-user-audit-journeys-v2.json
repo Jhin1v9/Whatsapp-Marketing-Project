@@ -1,0 +1,97 @@
+{
+  "startedAt": "2026-03-07T00:28:54.552Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "seed": {
+    "contactsCreated": 3
+  },
+  "journeys": [
+    {
+      "name": "create_client_ui",
+      "ok": true,
+      "details": {
+        "userName": "Auditoria 341956",
+        "userPhonePretty": "+34 612 340 123"
+      }
+    },
+    {
+      "name": "verify_client_on_list",
+      "ok": true,
+      "details": {
+        "listedPhone": "+34612340123"
+      }
+    },
+    {
+      "name": "campaign_create_and_send",
+      "ok": true,
+      "details": {
+        "campaignName": "camp_341956"
+      }
+    },
+    {
+      "name": "bulk_send_flow",
+      "ok": false,
+      "details": "Error: Fluxo de envio em massa nao finalizou."
+    },
+    {
+      "name": "inbox_client_actions",
+      "ok": false,
+      "details": "Error: Cliente da auditoria nao apareceu na inbox."
+    },
+    {
+      "name": "templates_crud",
+      "ok": false,
+      "details": "Error: Criacao de template falhou."
+    },
+    {
+      "name": "ia_studio_flow",
+      "ok": false,
+      "details": "Error: IA Studio sem campanhas para operar."
+    }
+  ],
+  "routeSweep": [],
+  "failures": [
+    {
+      "area": "journey",
+      "step": "bulk_send_flow",
+      "detail": "Error: Fluxo de envio em massa nao finalizou."
+    },
+    {
+      "area": "journey",
+      "step": "inbox_client_actions",
+      "detail": "Error: Cliente da auditoria nao apareceu na inbox."
+    },
+    {
+      "area": "journey",
+      "step": "templates_crud",
+      "detail": "Error: Criacao de template falhou."
+    },
+    {
+      "area": "journey",
+      "step": "ia_studio_flow",
+      "detail": "Error: IA Studio sem campanhas para operar."
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/clientes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/campanhas. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)"
+  ],
+  "serverLogsTail": "\n> @app/web@0.1.0 dev\n> next dev -p 3000\n\n  ▲ Next.js 14.2.20\n  - Local:        http://localhost:3000\n\n ✓ Starting...\n ✓ Ready in 3s\n ○ Compiling / ...\n ✓ Compiled / in 1264ms (524 modules)\n GET / 200 in 1606ms\n ✓ Compiled /contacts in 230ms (294 modules)\n POST /contacts 201 in 417ms\n POST /contacts 201 in 13ms\n POST /contacts 201 in 11ms\n ✓ Compiled /messages/simulate-inbound in 96ms (296 modules)\n POST /messages/simulate-inbound 201 in 198ms\n ✓ Compiled /campaigns in 200ms (298 modules)\n POST /campaigns 201 in 247ms\n ✓ Compiled /clientes/novo in 392ms (567 modules)\n GET /clientes/novo 200 in 583ms\n ✓ Compiled /me/preferences/[key] in 324ms (305 modules)\n POST /contacts 201 in 538ms\n ✓ Compiled /contacts/[contactId]/consents in 160ms (307 modules)\n GET /me/preferences/ui_theme_mode 200 in 1114ms\n GET /me/preferences/global_filters 200 in 1112ms\n GET /me/preferences/ui_theme_mode 200 in 29ms\n GET /me/preferences/global_filters 200 in 36ms\n POST /contacts/contact_4/consents 201 in 887ms\n ✓ Compiled /clientes in 340ms (578 modules)\n GET /clientes 200 in 527ms\n GET /contacts 200 in 34ms\n GET /me/preferences/ui_theme_mode 200 in 52ms\n GET /me/preferences/global_filters 200 in 52ms\n GET /contacts 200 in 50ms\n GET /me/preferences/ui_theme_mode 200 in 34ms\n GET /me/preferences/global_filters 200 in 34ms\n ⨯ Failed to generate static paths for /me/preferences/[key]:\nTypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:71:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:76:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError'\n}\n ⨯ Failed to generate static paths for /me/preferences/[key]:\nTypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:71:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:76:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError'\n}\n ⨯ Failed to generate static paths for /me/preferences/[key]:\nTypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:71:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:76:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError'\n}\n ⨯ Failed to generate static paths for /me/preferences/[key]:\nTypeError: __webpack_require__.C is not a function\n    at C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:71:21\n    at Object.<anonymous> (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\apps\\web\\.next\\server\\app\\me\\preferences\\[key]\\route.js:76:3)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)\n    at mod.require (C:\\Users\\Administrador\\Documents\\Projeto Whatsapp Bot Marketing Auto\\node_modules\\next\\dist\\server\\require-hook.js:65:28) {\n  type: 'TypeError'\n}\n ○ Compiling /campanhas ...\n ✓ Compiled /campanhas in 2.2s (598 modules)\n GET /campanhas 200 in 2410ms\n GET /campaigns 200 in 46ms\n GET /contacts 200 in 55ms\n GET /campaigns 200 in 36ms\n GET /contacts 200 in 17ms\n POST /campaigns 201 in 17ms\n ○ Compiling /campaigns/[campaignId]/ai-drafts ...\n GET /me/preferences/ui_theme_mode 200 in 796ms\n GET /me/preferences/global_filters 200 in 796ms\n ✓ Compiled /campaigns/[campaignId]/ai-drafts in 1071ms (606 modules)\n ✓ Compiled in 1ms (321 modules)\n ✓ Compiled in 1ms (321 modules)\n ✓ Compiled in 1ms (321 modules)\n GET /me/preferences/ui_theme_mode 200 in 1023ms\n GET /me/preferences/global_filters 200 in 1022ms\n POST /campaigns/campaign_2/ai-drafts 200 in 1650ms\n GET /envio-massa 200 in 1807ms\n GET /contacts 200 in 47ms\n GET /me/preferences/ui_theme_mode 200 in 67ms\n GET /me/preferences/global_filters 200 in 65ms\n GET /contacts 200 in 67ms\n GET /me/preferences/ui_theme_mode 200 in 42ms\n GET /me/preferences/global_filters 200 in 42ms\n ✓ Compiled /inbox in 454ms (598 modules)\n GET /inbox 200 in 574ms\n ○ Compiling /messages ...\n ✓ Compiled /messages in 728ms (606 modules)\n GET /campaigns 200 in 794ms\n GET /me/preferences/ui_theme_mode 200 in 813ms\n GET /me/preferences/global_filters 200 in 812ms\n GET /messages 200 in 852ms\n GET /contacts 200 in 857ms\n GET /templates 200 in 1036ms\n GET /me/preferences/ui_theme_mode 200 in 33ms\n GET /me/preferences/global_filters 200 in 32ms\n GET /me/preferences/templates_library_v1 200 in 28ms\n GET /me/preferences/ui_theme_mode 200 in 19ms\n GET /me/preferences/global_filters 200 in 29ms\n GET /me/preferences/templates_library_v1 200 in 30ms\n GET /campaigns 200 in 28ms\n GET /campaigns 200 in 24ms\n PUT /me/preferences/templates_library_v1 200 in 22ms\n PUT /me/preferences/templates_library_v1 200 in 16ms\n PUT /me/preferences/templates_library_v1 200 in 15ms\n ✓ Compiled /ia-studio in 373ms (587 modules)\n GET /ia-studio 200 in 485ms\n",
+  "summary": {
+    "runMode": "journeys",
+    "routesChecked": 0,
+    "routeFailedLoads": 0,
+    "routeFailedClicks": 0,
+    "journeysRun": 7,
+    "journeysFailed": 4,
+    "failuresTotal": 4,
+    "consoleErrorsUnique": 2,
+    "pageErrorsUnique": 0
+  },
+  "uniqueConsoleErrors": [
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/clientes. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)",
+    "Failed to fetch RSC payload for http://127.0.0.1:3000/campanhas. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:58:27)\n    at fastRefreshReducerImpl (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/reducers/fast-refresh-reducer.js:33:67)\n    at clientReducer (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/router-reducer/router-reducer.js:41:67)\n    at Object.action (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:150:55)\n    at runAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:56:38)\n    at dispatchAction (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:113:9)\n    at Object.dispatch (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/shared/lib/router/action-queue.js:145:40)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/use-reducer-with-devtools.js:130:21)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:304:25)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at Object.fastRefresh (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/app-router.js:303:48)\n    at eval (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:277:28)\n    at startTransition (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/compiled/react/cjs/react.development.js:2597:25)\n    at processMessage (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:276:44)\n    at WebSocket.handler (webpack-internal:///(app-pages-browser)/../../node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:395:17)"
+  ],
+  "uniquePageErrors": [],
+  "finishedAt": "2026-03-07T00:30:18.815Z"
+}
