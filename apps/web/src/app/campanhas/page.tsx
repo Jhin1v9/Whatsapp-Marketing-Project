@@ -44,6 +44,12 @@ type CampaignForm = {
   readonly recipientsCsv: string;
 };
 
+type ErrorHistoryEntry = {
+  readonly id: string;
+  readonly at: string;
+  readonly message: string;
+};
+
 const INITIAL_FORM: CampaignForm = {
   name: "",
   type: "marketing",
@@ -119,11 +125,13 @@ export default function CampanhasPage(): JSX.Element {
   const selectedContactIdsRef = useRef<readonly string[]>([]);
   const [contactQuery, setContactQuery] = useState("");
   const [status, setStatus] = useState("");
+  const [errorHistory, setErrorHistory] = useState<readonly ErrorHistoryEntry[]>([]);
   const [form, setForm] = useState<CampaignForm>(INITIAL_FORM);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [recipientErrors, setRecipientErrors] = useState<readonly string[]>([]);
+  const lastCapturedErrorRef = useRef("");
 
   const headers = {
     ...defaultAppHeaders(),
@@ -152,7 +160,6 @@ export default function CampanhasPage(): JSX.Element {
       const dataContacts = (await contactsResponse.json()) as Contact[];
       setCampaigns(dataCampaigns);
       setContacts(dataContacts);
-      setStatus(`Campanhas: ${dataCampaigns.length} | Contatos: ${dataContacts.length}`);
     } catch (error) {
       setStatus(`Erro ao carregar campanhas: ${String(error)}`);
     }
@@ -161,6 +168,27 @@ export default function CampanhasPage(): JSX.Element {
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    const message = status.trim();
+    if (!message) return;
+    const normalized = message.toLowerCase();
+    const isPersistentAlert =
+      normalized.includes("falha") ||
+      normalized.includes("erro") ||
+      normalized.includes("nao foi possivel") ||
+      normalized.includes("sem envio real");
+    if (!isPersistentAlert) return;
+    if (lastCapturedErrorRef.current === message) return;
+    lastCapturedErrorRef.current = message;
+
+    const entry: ErrorHistoryEntry = {
+      id: `err_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
+      at: new Date().toISOString(),
+      message,
+    };
+    setErrorHistory((prev) => [entry, ...prev].slice(0, 12));
+  }, [status]);
 
   const updateSelectedContactIds = useCallback(
     (updater: (prev: readonly string[]) => readonly string[]): void => {
@@ -842,6 +870,28 @@ export default function CampanhasPage(): JSX.Element {
       </section>
 
       <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
+
+      {errorHistory.length > 0 ? (
+        <section className="rounded-xl border border-danger/30 bg-danger/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-danger">Historico de erros (nao some sozinho)</p>
+            <button
+              onClick={() => setErrorHistory([])}
+              className="rounded-md border border-danger/40 bg-danger/10 px-2 py-1 text-xs text-danger"
+            >
+              Limpar historico
+            </button>
+          </div>
+          <div className="space-y-2">
+            {errorHistory.map((item) => (
+              <div key={item.id} className="rounded-lg border border-danger/30 bg-black/20 p-2">
+                <p className="text-[11px] text-slate-400">{new Date(item.at).toLocaleString()}</p>
+                <p className="text-sm text-slate-200">{item.message}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <DataOpsPanel
         scopeLabel="Audiencias, templates e resultados de campanha"
