@@ -135,6 +135,10 @@ function SecretField({ value, placeholder, revealed, disabled, onToggle, onChang
   );
 }
 
+function CredentialLabel({ children }: { readonly children: string }): JSX.Element {
+  return <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-300">{children}</span>;
+}
+
 async function readHealthcheckError(response: Response): Promise<string> {
   const fallback = `Teste falhou: HTTP ${response.status}`;
   const responseClone = response.clone();
@@ -753,12 +757,30 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Meta WhatsApp Cloud API</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={meta.appId} placeholder="" revealed={revealed.meta_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_app_id")} onChange={(value) => setMeta((prev) => ({ ...prev, appId: value }))} />
-              <SecretField value={meta.businessAccountId} placeholder="" revealed={revealed.meta_ba_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_ba_id")} onChange={(value) => setMeta((prev) => ({ ...prev, businessAccountId: value }))} />
-              <SecretField value={meta.phoneNumberId} placeholder="" revealed={revealed.meta_phone_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_phone_id")} onChange={(value) => setMeta((prev) => ({ ...prev, phoneNumberId: value }))} />
-              <SecretField value={meta.verifyToken} placeholder="" revealed={revealed.meta_verify_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_verify_token")} onChange={(value) => setMeta((prev) => ({ ...prev, verifyToken: value }))} />
-              <input value={meta.webhookUrl} onChange={(event) => setMeta((prev) => ({ ...prev, webhookUrl: event.target.value }))} placeholder="" disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 md:col-span-2" />
-              <SecretField value={meta.permanentToken} placeholder="" revealed={revealed.meta_permanent_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_permanent_token")} onChange={(value) => setMeta((prev) => ({ ...prev, permanentToken: value }))} className="md:col-span-2" />
+              <label className="space-y-1">
+                <CredentialLabel>App ID</CredentialLabel>
+                <SecretField value={meta.appId} placeholder="Ex.: 2629250557458079" revealed={revealed.meta_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_app_id")} onChange={(value) => setMeta((prev) => ({ ...prev, appId: value }))} />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Business Account ID (WABA)</CredentialLabel>
+                <SecretField value={meta.businessAccountId} placeholder="Ex.: 1108672684229740" revealed={revealed.meta_ba_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_ba_id")} onChange={(value) => setMeta((prev) => ({ ...prev, businessAccountId: value }))} />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Phone Number ID</CredentialLabel>
+                <SecretField value={meta.phoneNumberId} placeholder="Ex.: 801139416415032" revealed={revealed.meta_phone_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_phone_id")} onChange={(value) => setMeta((prev) => ({ ...prev, phoneNumberId: value }))} />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Verify Token</CredentialLabel>
+                <SecretField value={meta.verifyToken} placeholder="Token usado na verificacao do webhook" revealed={revealed.meta_verify_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_verify_token")} onChange={(value) => setMeta((prev) => ({ ...prev, verifyToken: value }))} />
+              </label>
+              <label className="space-y-1 md:col-span-2">
+                <CredentialLabel>Webhook URL (Meta)</CredentialLabel>
+                <input value={meta.webhookUrl} onChange={(event) => setMeta((prev) => ({ ...prev, webhookUrl: event.target.value }))} placeholder="https://seu-dominio.com/integrations/meta/webhook" disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 w-full" />
+              </label>
+              <label className="space-y-1 md:col-span-2">
+                <CredentialLabel>Permanent Token (System User)</CredentialLabel>
+                <SecretField value={meta.permanentToken} placeholder="Token EAA... gerado em Usuarios del sistema" revealed={revealed.meta_permanent_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("meta_permanent_token")} onChange={(value) => setMeta((prev) => ({ ...prev, permanentToken: value }))} />
+              </label>
             </div>
             <div className="mt-2 rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-slate-300">
               Callback interno da API: <strong>{callbackUrl}</strong>
@@ -768,31 +790,58 @@ export default function IntegracoesPage(): JSX.Element {
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Instagram Messaging</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={instagram.appId} placeholder="" revealed={revealed.instagram_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_app_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, appId: value }))} />
-              <SecretField value={instagram.pageId} placeholder="" revealed={revealed.instagram_page_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_page_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, pageId: value }))} />
-              <SecretField value={instagram.accessToken} placeholder="" revealed={revealed.instagram_access_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_access_token")} onChange={(value) => setInstagram((prev) => ({ ...prev, accessToken: value }))} className="md:col-span-2" />
+              <label className="space-y-1">
+                <CredentialLabel>Instagram App ID</CredentialLabel>
+                <SecretField value={instagram.appId} placeholder="App ID do Instagram/Facebook" revealed={revealed.instagram_app_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_app_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, appId: value }))} />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Instagram Page ID</CredentialLabel>
+                <SecretField value={instagram.pageId} placeholder="ID da pagina conectada ao Instagram" revealed={revealed.instagram_page_id} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_page_id")} onChange={(value) => setInstagram((prev) => ({ ...prev, pageId: value }))} />
+              </label>
+              <label className="space-y-1 md:col-span-2">
+                <CredentialLabel>Instagram Access Token</CredentialLabel>
+                <SecretField value={instagram.accessToken} placeholder="Token de acesso do Instagram Messaging" revealed={revealed.instagram_access_token} disabled={!isEditUnlocked} onToggle={() => toggleReveal("instagram_access_token")} onChange={(value) => setInstagram((prev) => ({ ...prev, accessToken: value }))} />
+              </label>
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Stripe Billing</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <SecretField value={stripe.publishableKey} placeholder="" revealed={revealed.stripe_publishable_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_publishable_key")} onChange={(value) => setStripe((prev) => ({ ...prev, publishableKey: value }))} />
-              <SecretField value={stripe.webhookSecret} placeholder="" revealed={revealed.stripe_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_webhook_secret")} onChange={(value) => setStripe((prev) => ({ ...prev, webhookSecret: value }))} />
-              <SecretField value={stripe.secretKey} placeholder="" revealed={revealed.stripe_secret_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_secret_key")} onChange={(value) => setStripe((prev) => ({ ...prev, secretKey: value }))} className="md:col-span-2" />
+              <label className="space-y-1">
+                <CredentialLabel>Stripe Publishable Key</CredentialLabel>
+                <SecretField value={stripe.publishableKey} placeholder="pk_live_..." revealed={revealed.stripe_publishable_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_publishable_key")} onChange={(value) => setStripe((prev) => ({ ...prev, publishableKey: value }))} />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Stripe Webhook Secret</CredentialLabel>
+                <SecretField value={stripe.webhookSecret} placeholder="whsec_..." revealed={revealed.stripe_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_webhook_secret")} onChange={(value) => setStripe((prev) => ({ ...prev, webhookSecret: value }))} />
+              </label>
+              <label className="space-y-1 md:col-span-2">
+                <CredentialLabel>Stripe Secret Key</CredentialLabel>
+                <SecretField value={stripe.secretKey} placeholder="sk_live_..." revealed={revealed.stripe_secret_key} disabled={!isEditUnlocked} onToggle={() => toggleReveal("stripe_secret_key")} onChange={(value) => setStripe((prev) => ({ ...prev, secretKey: value }))} />
+              </label>
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Google Reviews</p>
-            <input value={googleReviews.reviewUrl} onChange={(event) => setGoogleReviews({ reviewUrl: event.target.value })} disabled={!isEditUnlocked} placeholder="" className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
+            <label className="space-y-1">
+              <CredentialLabel>Google Review URL</CredentialLabel>
+              <input value={googleReviews.reviewUrl} onChange={(event) => setGoogleReviews({ reviewUrl: event.target.value })} disabled={!isEditUnlocked} placeholder="https://g.page/r/..." className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
+            </label>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3">
             <p className="mb-2 font-semibold">Google Forms</p>
             <div className="grid gap-2 md:grid-cols-2">
-              <input value={googleForms.endpointUrl} onChange={(event) => setGoogleForms((prev) => ({ ...prev, endpointUrl: event.target.value }))} placeholder="" disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
-              <SecretField value={googleForms.webhookSecret} placeholder="" revealed={revealed.forms_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("forms_webhook_secret")} onChange={(value) => setGoogleForms((prev) => ({ ...prev, webhookSecret: value }))} />
+              <label className="space-y-1">
+                <CredentialLabel>Google Forms Endpoint URL</CredentialLabel>
+                <input value={googleForms.endpointUrl} onChange={(event) => setGoogleForms((prev) => ({ ...prev, endpointUrl: event.target.value }))} placeholder="https://script.google.com/..." disabled={!isEditUnlocked} className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 w-full" />
+              </label>
+              <label className="space-y-1">
+                <CredentialLabel>Google Forms Webhook Secret</CredentialLabel>
+                <SecretField value={googleForms.webhookSecret} placeholder="Segredo para validar webhook" revealed={revealed.forms_webhook_secret} disabled={!isEditUnlocked} onToggle={() => toggleReveal("forms_webhook_secret")} onChange={(value) => setGoogleForms((prev) => ({ ...prev, webhookSecret: value }))} />
+              </label>
             </div>
           </div>
         </article>

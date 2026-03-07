@@ -26,6 +26,7 @@ type RunCampaignResult = {
   readonly queued: number;
   readonly failed: number;
   readonly deliveryMode: "meta" | "queue_local" | "mixed" | "failed";
+  readonly sampleFailure?: string;
 };
 
 type Contact = {
@@ -411,9 +412,14 @@ export default function CampanhasPage(): JSX.Element {
       }
 
       const runResult = (await runResponse.json()) as RunCampaignResult;
-      if (runResult.failed > 0) {
+      if (runResult.deliveryMode === "queue_local" && runResult.sent === 0 && runResult.queued > 0) {
         setStatus(
-          `Campanha executada com falhas. Processadas: ${runResult.processed}, enviadas: ${runResult.sent}, fila local: ${runResult.queued}, falhas: ${runResult.failed}.`,
+          `Campanha processada em fila local (SEM envio real ao WhatsApp). Processadas: ${runResult.processed}, fila local: ${runResult.queued}. Configure Meta no deploy para envio externo.`,
+        );
+      } else if (runResult.failed > 0) {
+        const failureHint = runResult.sampleFailure ? ` Motivo: ${runResult.sampleFailure}` : "";
+        setStatus(
+          `Campanha executada com falhas. Processadas: ${runResult.processed}, enviadas: ${runResult.sent}, fila local: ${runResult.queued}, falhas: ${runResult.failed}.${failureHint}`,
         );
       } else {
         setStatus(

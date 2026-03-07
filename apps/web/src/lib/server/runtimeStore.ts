@@ -1579,6 +1579,7 @@ export async function runCampaign(
   readonly queued: number;
   readonly failed: number;
   readonly deliveryMode: "meta" | "queue_local" | "mixed" | "failed";
+  readonly sampleFailure?: string;
 }> {
   const campaign = findCampaignOrThrow(context, campaignId);
   if (!campaign.approvedVariation) {
@@ -1595,6 +1596,7 @@ export async function runCampaign(
   let sent = 0;
   let queuedLocal = 0;
   let failed = 0;
+  let sampleFailure = "";
   for (const phoneNumber of campaign.recipients) {
     const phoneTail = phoneNumber.replace(/\D/g, "").slice(-4) || "0000";
     const contact = upsertContactByPhone(context, {
@@ -1614,8 +1616,11 @@ export async function runCampaign(
       } else {
         queuedLocal += 1;
       }
-    } catch {
+    } catch (error) {
       failed += 1;
+      if (!sampleFailure) {
+        sampleFailure = error instanceof Error ? error.message : "Falha desconhecida no envio da campanha.";
+      }
     }
   }
 
@@ -1645,6 +1650,7 @@ export async function runCampaign(
     queued: queuedLocal,
     failed,
     deliveryMode,
+    ...(sampleFailure ? { sampleFailure } : {}),
   };
 }
 

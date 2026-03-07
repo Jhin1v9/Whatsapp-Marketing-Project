@@ -199,12 +199,15 @@ function TextField({
 function SectionCard({
   title,
   children,
+  className,
 }: {
   readonly title: string;
   readonly children: ReactNode;
+  readonly className?: string;
 }): JSX.Element {
+  const cardClassName = className ? `section-card ${className}` : "section-card";
   return (
-    <article className="section-card">
+    <article className={cardClassName}>
       <h3 className="text-3xl font-black tracking-tight">{title}</h3>
       <div className="mt-4 space-y-3">{children}</div>
     </article>
@@ -613,7 +616,7 @@ export default function ConfiguracoesPage(): JSX.Element {
           </div>
         </article>
 
-        <SectionCard title="Privacidade e Compliance interno">
+        <SectionCard title="Privacidade e Compliance interno" className="2xl:col-span-5">
           <TextField
             label="Responsavel por privacidade"
             value={settings.privacyOwner}
