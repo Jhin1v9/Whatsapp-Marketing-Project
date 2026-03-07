@@ -38,7 +38,7 @@ export default function ClientesPage(): JSX.Element {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState("Carregando clientes...");
+  const [status, setStatus] = useState("");
   const [pendingDelete, setPendingDelete] = useState<Contact | null>(null);
 
   const fetchContacts = async (): Promise<void> => {
@@ -120,9 +120,9 @@ export default function ClientesPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <PageHeader
-        icon="👥"
+        icon="📇"
         title="Clientes"
-        subtitle="Lista operacional com busca, ordenacao, paginação, edição e exclusão (LGPD)."
+        subtitle="Lista operacional com busca, ordenacao, paginacao, edicao e exclusao (LGPD)."
         actions={["Atualizar lista", "Exportar", "Novo cliente"]}
         metrics={[
           { label: "Total", value: String(contacts.length) },
@@ -136,7 +136,7 @@ export default function ClientesPage(): JSX.Element {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nome, telefone, contexto ou origem"
+            placeholder=""
             className="w-full max-w-xl rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
           />
 
@@ -147,7 +147,7 @@ export default function ClientesPage(): JSX.Element {
               <option value="phone">Ordenar: Telefone</option>
             </select>
             <button onClick={() => void fetchContacts()} className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold">Recarregar</button>
-            <Link href="/clientes/novo" className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent">➕ Agregar Cliente</Link>
+            <Link href="/clientes/novo" className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent">Agregar Cliente</Link>
           </div>
         </div>
 
@@ -196,16 +196,12 @@ export default function ClientesPage(): JSX.Element {
           <button
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm"
-          >
-            ← Anterior
-          </button>
+          >Anterior</button>
           <span className="text-sm text-slate-300">Pagina {page} de {pageCount}</span>
           <button
             onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))}
             className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm"
-          >
-            Proxima →
-          </button>
+          >Proxima</button>
         </div>
 
         <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
@@ -228,3 +224,5 @@ export default function ClientesPage(): JSX.Element {
     </div>
   );
 }
+
+

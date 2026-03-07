@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contextFromHeaders, createContact, listContacts } from "../../lib/server/runtimeStore";
+import { withRuntimeCookie } from "../../lib/server/runtimeCookie";
 
 type CreateContactPayload = {
   readonly phoneNumber?: string;
@@ -14,23 +15,23 @@ type CreateContactPayload = {
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const contacts = listContacts(context);
-    return NextResponse.json(contacts, { status: 200 });
+    return withRuntimeCookie(NextResponse.json(contacts, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao listar contatos.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 400 }));
   }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const payload = (await request.json()) as CreateContactPayload;
     const created = createContact(context, payload);
-    return NextResponse.json(created, { status: 201 });
+    return withRuntimeCookie(NextResponse.json(created, { status: 201 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao criar contato.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 400 }));
   }
 }

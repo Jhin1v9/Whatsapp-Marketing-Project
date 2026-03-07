@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DataOpsPanel } from "../../components/DataOpsPanel";
 import { PageHeader } from "../../components/PageHeader";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -11,6 +11,7 @@ import type { BadgeTone } from "../../lib/statusMaps";
 type Campaign = {
   readonly id: string;
   readonly name: string;
+  readonly type: "marketing" | "service_notifications";
   readonly status: "draft" | "scheduled" | "running" | "paused" | "completed";
   readonly recipients: readonly string[];
   readonly approvedVariation?: string;
@@ -35,7 +36,7 @@ type CampaignForm = {
 const INITIAL_FORM: CampaignForm = {
   name: "",
   type: "marketing",
-  template: "Oi {{first_name}}, temos uma condicao especial hoje.",
+  template: "",
   recipientsCsv: "",
 };
 
@@ -57,11 +58,43 @@ function isE164(phoneNumber: string): boolean {
   return /^\+[1-9]\d{7,14}$/.test(phoneNumber.trim());
 }
 
+function normalizePhoneInput(raw: string): string {
+  const cleaned = raw.trim();
+  if (!cleaned) return "";
+  const onlyDigits = cleaned.replace(/\D/g, "");
+  if (!onlyDigits) return "";
+  if (cleaned.startsWith("+")) return `+${onlyDigits}`;
+  if (onlyDigits.startsWith("00") && onlyDigits.length > 2) return `+${onlyDigits.slice(2)}`;
+  if (onlyDigits.length === 9) return `+34${onlyDigits}`;
+  return `+${onlyDigits}`;
+}
+
+function recipientCandidates(input: string): readonly string[] {
+  const regexMatches = input.match(/\+?\d[\d\s().-]{6,20}\d/g) ?? [];
+  const candidates = regexMatches.length > 0 ? regexMatches : input.split(/[\n,;]+/);
+  return candidates.map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
 function parseRecipients(csv: string): readonly string[] {
-  return csv
-    .split(/[\n,;]+/)
-    .map((item) => item.trim())
-    .filter((item) => /^\+[1-9]\d{7,14}$/.test(item));
+  const unique = new Set<string>();
+  for (const item of recipientCandidates(csv)) {
+    const normalized = normalizePhoneInput(item);
+    if (normalized && /^\+[1-9]\d{7,14}$/.test(normalized)) {
+      unique.add(normalized);
+    }
+  }
+  return Array.from(unique);
+}
+
+function invalidRecipientsFromInput(input: string): readonly string[] {
+  const uniqueInvalid = new Set<string>();
+  for (const item of recipientCandidates(input)) {
+    const normalized = normalizePhoneInput(item);
+    if (!normalized || !isE164(normalized)) {
+      uniqueInvalid.add(item);
+    }
+  }
+  return Array.from(uniqueInvalid);
 }
 
 function fullName(contact: Contact): string {
@@ -72,12 +105,14 @@ export default function CampanhasPage(): JSX.Element {
   const [campaigns, setCampaigns] = useState<readonly Campaign[]>([]);
   const [contacts, setContacts] = useState<readonly Contact[]>([]);
   const [selectedContactIds, setSelectedContactIds] = useState<readonly string[]>([]);
+  const selectedContactIdsRef = useRef<readonly string[]>([]);
   const [contactQuery, setContactQuery] = useState("");
-  const [status, setStatus] = useState("Carregando campanhas...");
+  const [status, setStatus] = useState("");
   const [form, setForm] = useState<CampaignForm>(INITIAL_FORM);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [recipientErrors, setRecipientErrors] = useState<readonly string[]>([]);
 
   const headers = {
     ...defaultAppHeaders(),
@@ -106,7 +141,7 @@ export default function CampanhasPage(): JSX.Element {
       const dataContacts = (await contactsResponse.json()) as Contact[];
       setCampaigns(dataCampaigns);
       setContacts(dataContacts);
-      setStatus(`Campanhas: ${dataCampaigns.length} • Contatos: ${dataContacts.length}`);
+      setStatus(`Campanhas: ${dataCampaigns.length} | Contatos: ${dataContacts.length}`);
     } catch (error) {
       setStatus(`Erro ao carregar campanhas: ${String(error)}`);
     }
@@ -116,9 +151,24 @@ export default function CampanhasPage(): JSX.Element {
     void load();
   }, []);
 
+  const updateSelectedContactIds = useCallback(
+    (updater: (prev: readonly string[]) => readonly string[]): void => {
+      setSelectedContactIds((prev) => {
+        const next = updater(prev);
+        selectedContactIdsRef.current = next;
+        return next;
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
-    setSelectedContactIds((prev) => prev.filter((id) => contacts.some((contact) => contact.id === id)));
-  }, [contacts]);
+    updateSelectedContactIds((prev) => prev.filter((id) => contacts.some((contact) => contact.id === id)));
+  }, [contacts, updateSelectedContactIds]);
+
+  useEffect(() => {
+    selectedContactIdsRef.current = selectedContactIds;
+  }, [selectedContactIds]);
 
   const metrics = useMemo(() => {
     const active = campaigns.filter((item) => item.status === "running").length;
@@ -144,16 +194,41 @@ export default function CampanhasPage(): JSX.Element {
     });
   }, [contactQuery, validContacts]);
 
-  const selectedPhones = useMemo(
-    () =>
-      validContacts
-        .filter((contact) => selectedContactIds.includes(contact.id))
-        .map((contact) => contact.phoneNumber),
+  const selectedValidContacts = useMemo(
+    () => validContacts.filter((contact) => selectedContactIds.includes(contact.id)),
     [selectedContactIds, validContacts],
   );
 
+  const selectedPhones = useMemo(
+    () => selectedValidContacts.map((contact) => contact.phoneNumber),
+    [selectedValidContacts],
+  );
+
+  const staleSelectedCount = Math.max(0, selectedContactIds.length - selectedValidContacts.length);
+
+  const resolveRecipients = useCallback(
+    (inputCsv: string): {
+      readonly recipients: readonly string[];
+      readonly invalidRecipients: readonly string[];
+      readonly selectedValidCount: number;
+      readonly selectedStaleCount: number;
+    } => {
+      const selectedIds = selectedContactIdsRef.current;
+      const selectedPhonesLive = validContacts
+        .filter((contact) => selectedIds.includes(contact.id))
+        .map((contact) => contact.phoneNumber);
+      const invalidRecipients = invalidRecipientsFromInput(inputCsv);
+      const recipients = Array.from(new Set([...parseRecipients(inputCsv), ...selectedPhonesLive]));
+      const selectedValidCount = selectedPhonesLive.length;
+      const selectedStaleCount = Math.max(0, selectedIds.length - selectedValidCount);
+      return { recipients, invalidRecipients, selectedValidCount, selectedStaleCount };
+    },
+    [validContacts],
+  );
+
   const saveCampaign = async (): Promise<void> => {
-    const recipients = parseRecipients(form.recipientsCsv);
+    const { recipients, invalidRecipients, selectedValidCount, selectedStaleCount } = resolveRecipients(form.recipientsCsv);
+    setRecipientErrors(invalidRecipients);
 
     if (!form.name.trim()) {
       setStatus("Informe o nome da campanha.");
@@ -162,6 +237,18 @@ export default function CampanhasPage(): JSX.Element {
 
     if (!form.template.trim()) {
       setStatus("Informe o template da campanha.");
+      return;
+    }
+    if (selectedStaleCount > 0) {
+      setStatus(`Ha ${selectedStaleCount} contato(s) selecionado(s) sem telefone valido/opt-out. Ajuste a selecao.`);
+      return;
+    }
+    if (invalidRecipients.length > 0) {
+      setStatus(`Existem ${invalidRecipients.length} destinatarios invalidos. Corrija antes de salvar.`);
+      return;
+    }
+    if (recipients.length === 0) {
+      setStatus(`Nenhum destinatario valido detectado. Selecionados validos: ${selectedValidCount}.`);
       return;
     }
 
@@ -188,7 +275,7 @@ export default function CampanhasPage(): JSX.Element {
       setStatus(editingId ? "Campanha atualizada com sucesso." : "Campanha criada com sucesso.");
       setForm(INITIAL_FORM);
       setEditingId(null);
-      setSelectedContactIds([]);
+      updateSelectedContactIds(() => []);
       await load();
     } catch (error) {
       setStatus(`Erro inesperado ao salvar campanha: ${String(error)}`);
@@ -222,6 +309,42 @@ export default function CampanhasPage(): JSX.Element {
       await load();
     } catch (error) {
       setStatus(`Erro ao duplicar campanha: ${String(error)}`);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const removeCampaign = async (campaign: Campaign): Promise<void> => {
+    const confirmed = window.confirm(`Remover campanha "${campaign.name}"? Esta acao nao pode ser desfeita.`);
+    if (!confirmed) {
+      setStatus("Remocao de campanha cancelada.");
+      return;
+    }
+
+    setBusyId(campaign.id);
+    setStatus(`Removendo ${campaign.name}...`);
+
+    try {
+      const response = await fetch(`${apiBaseUrl()}/campaigns/${campaign.id}`, {
+        method: "DELETE",
+        headers: defaultAppHeaders(),
+      });
+
+      if (!response.ok) {
+        setStatus(`Erro ao remover campanha: ${await response.text()}`);
+        return;
+      }
+
+      if (editingId === campaign.id) {
+        setEditingId(null);
+        setForm(INITIAL_FORM);
+        updateSelectedContactIds(() => []);
+      }
+
+      setStatus(`Campanha ${campaign.name} removida.`);
+      await load();
+    } catch (error) {
+      setStatus(`Erro ao remover campanha: ${String(error)}`);
     } finally {
       setBusyId(null);
     }
@@ -284,84 +407,174 @@ export default function CampanhasPage(): JSX.Element {
   };
 
   const executeCampaign = async (campaign: Campaign): Promise<void> => {
+    if (editingId === campaign.id) {
+      const {
+        recipients: recipientsFromForm,
+        invalidRecipients: invalidFromForm,
+        selectedStaleCount,
+      } = resolveRecipients(form.recipientsCsv);
+
+      if (invalidFromForm.length > 0) {
+        setRecipientErrors(invalidFromForm);
+        setStatus(`Nao foi possivel executar: ${invalidFromForm.length} destinatarios invalidos no formulario.`);
+        return;
+      }
+      if (selectedStaleCount > 0) {
+        setStatus(`Nao foi possivel executar: ha ${selectedStaleCount} contato(s) selecionado(s) sem telefone valido/opt-out.`);
+        return;
+      }
+
+      if (recipientsFromForm.length > 0) {
+        const patchResponse = await fetch(`${apiBaseUrl()}/campaigns/${campaign.id}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({
+            name: form.name,
+            type: form.type,
+            template: form.template,
+            recipients: recipientsFromForm,
+          }),
+        });
+
+        if (!patchResponse.ok) {
+          setStatus(`Falha ao sincronizar edicao antes de executar: ${await patchResponse.text()}`);
+          return;
+        }
+
+        await load();
+        await executeCampaignById(campaign.id, form.name || campaign.name);
+        return;
+      }
+    }
+
     if (campaign.recipients.length === 0) {
-      setStatus(`Campanha ${campaign.name} sem destinatarios.`);
+      setStatus(`Campanha ${campaign.name} sem destinatarios. Adicione telefones E.164 e salve/execute novamente.`);
       return;
     }
     await executeCampaignById(campaign.id, campaign.name);
   };
 
-  const createAndSendTestCampaign = async (): Promise<void> => {
-    const recipients = parseRecipients(form.recipientsCsv);
+  const createAndSendCampaignNow = async (): Promise<void> => {
+    const actionStamp = Date.now();
+    const setSendNowStatus = (message: string): void => {
+      setStatus(`[Enviar agora ${actionStamp}] ${message}`);
+    };
+    setSendNowStatus("Processando envio imediato...");
+    const {
+      recipients,
+      invalidRecipients,
+      selectedValidCount,
+      selectedStaleCount,
+    } = resolveRecipients(form.recipientsCsv);
+    setRecipientErrors(invalidRecipients);
 
     if (!form.name.trim()) {
-      setStatus("Informe o nome da campanha teste.");
+      setSendNowStatus("Informe o nome da campanha.");
       return;
     }
     if (!form.template.trim()) {
-      setStatus("Informe o template da campanha teste.");
+      setSendNowStatus("Informe o template da campanha.");
+      return;
+    }
+    if (selectedStaleCount > 0) {
+      setSendNowStatus(`Ha ${selectedStaleCount} contato(s) selecionado(s) sem telefone valido/opt-out. Ajuste a selecao.`);
+      return;
+    }
+    if (invalidRecipients.length > 0) {
+      setSendNowStatus(`Existem ${invalidRecipients.length} destinatarios invalidos. Corrija antes de enviar.`);
       return;
     }
     if (recipients.length === 0) {
-      setStatus("Selecione contatos ou informe destinatarios E.164 para enviar teste.");
+      setSendNowStatus(`Nenhum destinatario valido detectado. Selecionados validos: ${selectedValidCount}.`);
       return;
     }
 
     setCreating(true);
-    setStatus("Criando campanha teste...");
+    setSendNowStatus(editingId ? "Salvando campanha em edicao para envio imediato..." : "Criando campanha para envio imediato...");
 
     try {
-      const createResponse = await fetch(`${apiBaseUrl()}/campaigns`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          name: form.name,
-          type: form.type,
-          template: form.template,
-          recipients,
-        }),
-      });
+      let targetCampaignId = editingId;
+      let targetCampaignName = form.name;
 
-      if (!createResponse.ok) {
-        setStatus(`Falha ao criar campanha teste: ${await createResponse.text()}`);
+      if (editingId) {
+        const updateResponse = await fetch(`${apiBaseUrl()}/campaigns/${editingId}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({
+            name: form.name,
+            type: form.type,
+            template: form.template,
+            recipients,
+          }),
+        });
+
+        if (!updateResponse.ok) {
+          setSendNowStatus(`Falha ao salvar campanha em edicao: ${await updateResponse.text()}`);
+          return;
+        }
+      } else {
+        const createResponse = await fetch(`${apiBaseUrl()}/campaigns`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            name: form.name,
+            type: form.type,
+            template: form.template,
+            recipients,
+          }),
+        });
+
+        if (!createResponse.ok) {
+          setSendNowStatus(`Falha ao criar campanha: ${await createResponse.text()}`);
+          return;
+        }
+
+        const createdCampaign = (await createResponse.json()) as Campaign;
+        targetCampaignId = createdCampaign.id;
+        targetCampaignName = createdCampaign.name;
+      }
+
+      if (!targetCampaignId) {
+        setSendNowStatus("Falha ao identificar campanha para envio.");
         return;
       }
 
-      const createdCampaign = (await createResponse.json()) as Campaign;
-      const sent = await executeCampaignById(createdCampaign.id, createdCampaign.name);
+      const sent = await executeCampaignById(targetCampaignId, targetCampaignName);
       if (sent) {
-        setForm(INITIAL_FORM);
-        setSelectedContactIds([]);
+        if (!editingId) {
+          setForm(INITIAL_FORM);
+          updateSelectedContactIds(() => []);
+        }
       }
     } catch (error) {
-      setStatus(`Erro no envio de teste: ${String(error)}`);
+      setSendNowStatus(`Erro no envio imediato: ${String(error)}`);
     } finally {
       setCreating(false);
     }
   };
 
   const addSelectedToRecipients = (): void => {
-    const current = parseRecipients(form.recipientsCsv);
-    const merged = Array.from(new Set([...current, ...selectedPhones]));
+    const { recipients: merged } = resolveRecipients(form.recipientsCsv);
     setForm((prev) => ({
       ...prev,
       recipientsCsv: merged.join(", "),
     }));
-    setStatus(`${selectedPhones.length} contatos adicionados na audiencia da campanha.`);
+    setRecipientErrors([]);
+    setStatus(`${selectedValidContacts.length} contatos validos adicionados na audiencia da campanha.`);
   };
 
   const selectAllFiltered = (): void => {
-    setSelectedContactIds(filteredContacts.map((contact) => contact.id));
+    updateSelectedContactIds(() => filteredContacts.map((contact) => contact.id));
     setStatus(`${filteredContacts.length} contatos selecionados.`);
   };
 
   const clearSelection = (): void => {
-    setSelectedContactIds([]);
+    updateSelectedContactIds(() => []);
     setStatus("Selecao de contatos limpa.");
   };
 
   const toggleContactSelection = (contactId: string): void => {
-    setSelectedContactIds((prev) =>
+    updateSelectedContactIds((prev) =>
       prev.includes(contactId) ? prev.filter((id) => id !== contactId) : [...prev, contactId],
     );
   };
@@ -373,6 +586,15 @@ export default function CampanhasPage(): JSX.Element {
         title="Campanhas e Orquestracao"
         subtitle="Execucao real com consentimento, aprovacao humana e fila de envio."
         actions={["Nova campanha"]}
+        onAction={(action) => {
+          if (action !== "Nova campanha") return;
+          setEditingId(null);
+          setForm(INITIAL_FORM);
+          updateSelectedContactIds(() => []);
+          setContactQuery("");
+          setRecipientErrors([]);
+          setStatus("Formulario pronto para criar uma nova campanha.");
+        }}
         metrics={[
           { label: "Ativas", value: String(metrics.active) },
           { label: "Aprovadas IA", value: String(metrics.approved) },
@@ -413,13 +635,14 @@ export default function CampanhasPage(): JSX.Element {
               value={form.template}
               onChange={(event) => setForm((prev) => ({ ...prev, template: event.target.value }))}
               className="min-h-20 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2"
+              placeholder="Hola {{first_name}}, tenemos una condicion especial esta semana. Te envio horarios?"
             />
           </label>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-3 md:col-span-2">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-semibold">
-                Selecione os contatos para campanha teste ({selectedContactIds.length} selecionados)
+                Selecione os contatos para {form.name.trim() ? `campanha ${form.name.trim()}` : "campanha atual"} ({selectedValidContacts.length} selecionados)
               </p>
               <div className="flex gap-2">
                 <button onClick={selectAllFiltered} className="rounded-md border border-white/20 bg-white/5 px-2 py-1 text-xs">Selecionar filtrados</button>
@@ -455,17 +678,34 @@ export default function CampanhasPage(): JSX.Element {
             <p className="mt-2 text-xs text-slate-400">
               Total de contatos validos para campanha: {validContacts.length} (contatos sem telefone E.164 ou com opt-out nao aparecem aqui).
             </p>
+            {staleSelectedCount > 0 ? (
+              <p className="mt-1 text-xs text-amber-300">
+                Aviso: {staleSelectedCount} contato(s) selecionado(s) nao entram no envio por telefone invalido/opt-out.
+              </p>
+            ) : null}
           </div>
 
           <label className="space-y-1 text-sm md:col-span-2">
             <span>Destinatarios (E.164, separados por virgula, ponto e virgula ou linha)</span>
             <textarea
               value={form.recipientsCsv}
-              onChange={(event) => setForm((prev) => ({ ...prev, recipientsCsv: event.target.value }))}
+              onChange={(event) => {
+                setForm((prev) => ({ ...prev, recipientsCsv: event.target.value }));
+                setRecipientErrors([]);
+              }}
               className="min-h-20 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2"
-              placeholder="+5511999999999, +5511888888888"
+              placeholder="+34 612 345 678, +34 611 222 333"
             />
+            <p className="text-xs text-slate-400">
+              Detectados: {Array.from(new Set([...parseRecipients(form.recipientsCsv), ...selectedPhones])).length} destinatarios validos
+              ({selectedPhones.length} vindos da selecao de contatos).
+            </p>
           </label>
+          {recipientErrors.length > 0 ? (
+            <div className="rounded-lg border border-danger/40 bg-danger/10 p-2 text-xs text-danger md:col-span-2">
+              Destinatarios invalidos: {recipientErrors.join(", ")}
+            </div>
+          ) : null}
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -476,17 +716,20 @@ export default function CampanhasPage(): JSX.Element {
             {creating ? "Salvando..." : editingId ? "Salvar alteracoes" : "Criar campanha"}
           </button>
           <button
-            onClick={() => void createAndSendTestCampaign()}
+            onClick={() => void createAndSendCampaignNow()}
             disabled={creating}
             className="rounded-lg border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Criar e enviar teste
+            Criar e enviar agora
           </button>
           <button
             onClick={() => {
               setForm(INITIAL_FORM);
               setEditingId(null);
-              setSelectedContactIds([]);
+              updateSelectedContactIds(() => []);
+              setRecipientErrors([]);
+              setContactQuery("");
+              setStatus("Formulario de campanha limpo.");
             }}
             className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold"
           >
@@ -514,7 +757,7 @@ export default function CampanhasPage(): JSX.Element {
                       setEditingId(campaign.id);
                       setForm({
                         name: campaign.name,
-                        type: "marketing",
+                        type: campaign.type,
                         template: campaign.template,
                         recipientsCsv: campaign.recipients.join(", "),
                       });
@@ -538,6 +781,13 @@ export default function CampanhasPage(): JSX.Element {
                     className="rounded-md border border-accent/50 bg-accent/10 px-2 py-1 text-xs text-accent disabled:opacity-60"
                   >
                     Executar
+                  </button>
+                  <button
+                    onClick={() => void removeCampaign(campaign)}
+                    disabled={busyId === campaign.id}
+                    className="rounded-md border border-danger/40 bg-danger/10 px-2 py-1 text-xs text-danger disabled:opacity-60"
+                  >
+                    Remover
                   </button>
                 </div>
               </div>
@@ -571,3 +821,5 @@ export default function CampanhasPage(): JSX.Element {
     </div>
   );
 }
+
+

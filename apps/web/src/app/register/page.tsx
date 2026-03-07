@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -17,11 +17,26 @@ export default function RegisterPage(): JSX.Element {
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("Preencha os dados para criar usuario real.");
+  const [status, setStatus] = useState("");
 
   const onSubmit = async (): Promise<void> => {
+    if (!name.trim()) {
+      setStatus("Informe o nome para registrar.");
+      return;
+    }
+    if (!identifier.trim()) {
+      setStatus("Informe email ou numero para registrar.");
+      return;
+    }
+    if (!password.trim()) {
+      setStatus("Informe a senha para registrar.");
+      return;
+    }
+
     try {
-      const isEmail = identifier.includes("@");
+      const normalizedName = name.trim();
+      const normalizedIdentifier = identifier.trim();
+      const isEmail = normalizedIdentifier.includes("@");
 
       const response = await fetch(`${apiBaseUrl()}/auth/register`, {
         method: "POST",
@@ -30,9 +45,9 @@ export default function RegisterPage(): JSX.Element {
           ...defaultAppHeaders(),
         },
         body: JSON.stringify({
-          name,
-          ...(isEmail ? { email: identifier } : { phoneNumber: identifier }),
-          password,
+          name: normalizedName,
+          ...(isEmail ? { email: normalizedIdentifier } : { phoneNumber: normalizedIdentifier }),
+          password: password.trim(),
         }),
       });
 
@@ -73,7 +88,7 @@ export default function RegisterPage(): JSX.Element {
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
             className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2"
-            placeholder="admin@empresa.com ou +5511999999999"
+            placeholder=""
           />
         </label>
 
@@ -96,4 +111,5 @@ export default function RegisterPage(): JSX.Element {
     </div>
   );
 }
+
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contextFromHeaders, processMetaWebhook, verifyMetaWebhookChallenge, type MetaWebhookPayload } from "../../../../lib/server/runtimeStore";
+import { withRuntimeCookie } from "../../../../lib/server/runtimeCookie";
 
 export async function GET(request: NextRequest): Promise<NextResponse<string>> {
   const mode = request.nextUrl.searchParams.get("hub.mode");
@@ -24,16 +25,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     payload = JSON.parse(rawBody) as MetaWebhookPayload;
   } catch {
-    return NextResponse.json({ ok: false, error: "Payload JSON invalido." }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ ok: false, error: "Payload JSON invalido." }, { status: 400 }));
   }
 
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const signature = request.headers.get("x-hub-signature-256");
     const result = processMetaWebhook(context, payload, rawBody, signature);
-    return NextResponse.json({ ok: true, ...result }, { status: 200 });
+    return withRuntimeCookie(NextResponse.json({ ok: true, ...result }, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao processar webhook";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ ok: false, error: message }, { status: 400 }));
   }
 }

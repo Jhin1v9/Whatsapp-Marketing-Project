@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,8 +35,16 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
       void engine.runAction("Nova campanha");
       return;
     }
+    if (q.includes("massa") || q.includes("disparo") || q.includes("broadcast")) {
+      void engine.runAction("Envio em massa");
+      return;
+    }
     if (q.includes("inbox") || q.includes("mensagem")) {
-      void engine.runAction("Inbox");
+      if (q.includes("inbox")) {
+        void engine.runAction("Inbox");
+        return;
+      }
+      void engine.runAction("Mensagens");
       return;
     }
     if (q.includes("cliente") || q.includes("contato")) {
@@ -68,7 +76,7 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
               <h1 className="text-xl font-black md:text-2xl">Plataforma Conversational Marketing</h1>
             </div>
             <div className="current-page-chip">
-              <span>{current?.icon ?? "📍"}</span>
+              <span>{current?.icon ?? "??"}</span>
               <span>{current?.label ?? "Dashboard"}</span>
             </div>
           </div>
@@ -77,7 +85,7 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
             <div className="topbar-search-wrap">
               <input
                 className="topbar-search"
-                placeholder="Buscar contatos, campanhas, mensagens, relatorios..."
+                placeholder=""
                 aria-label="Busca global"
                 value={quickSearch}
                 onChange={(event) => setQuickSearch(event.target.value)}
@@ -90,16 +98,23 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
               disabled={engine.busy}
               className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 text-sm font-semibold text-accent disabled:cursor-not-allowed disabled:opacity-60"
             >
-              ➕ Campanha
+              Campanha
+            </button>
+            <button
+              onClick={() => void engine.runAction("Envio em massa")}
+              disabled={engine.busy}
+              className="rounded-xl border border-accent2/50 bg-accent2/10 px-3 py-2 text-sm font-semibold text-accent2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Envio em Massa
             </button>
             <button
               onClick={() => void engine.runAction("Inbox")}
               disabled={engine.busy}
               className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-              🔔 Inbox
+              Inbox
             </button>
-            <Link href="/login" className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white">👤 Perfil</Link>
+            <Link href="/login" className="rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold text-white">Perfil</Link>
           </div>
         </header>
 
@@ -116,3 +131,4 @@ export function AppFrame({ children }: { readonly children: ReactNode }): JSX.El
     </div>
   );
 }
+

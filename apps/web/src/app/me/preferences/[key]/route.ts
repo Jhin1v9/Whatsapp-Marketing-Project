@@ -15,7 +15,7 @@ export async function GET(
   request: NextRequest,
   { params }: { readonly params: { readonly key: string } },
 ): Promise<NextResponse> {
-  const context = contextFromHeaders(request.headers);
+  const context = await contextFromHeaders(request.headers);
   const key = params.key;
 
   const value = await getPreference(context, key);
@@ -24,9 +24,10 @@ export async function GET(
     {
       key,
       value,
+      exists: value !== null,
       persistentStore: hasPersistentStoreConfigured(),
     },
-    { status: value === null ? 404 : 200 },
+    { status: 200 },
   );
 }
 
@@ -35,7 +36,7 @@ export async function PUT(
   { params }: { readonly params: { readonly key: string } },
 ): Promise<NextResponse> {
   const key = params.key;
-  const context = contextFromHeaders(request.headers);
+  const context = await contextFromHeaders(request.headers);
   const payload = (await request.json()) as SetPreferencePayload;
 
   await setPreference(context, key, payload.value);

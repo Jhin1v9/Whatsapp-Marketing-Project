@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -16,11 +16,21 @@ type LoginResponse = {
 export default function LoginPage(): JSX.Element {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("Entre com suas credenciais reais.");
+  const [status, setStatus] = useState("");
 
   const onSubmit = async (): Promise<void> => {
+    if (!identifier.trim()) {
+      setStatus("Informe email ou numero para entrar.");
+      return;
+    }
+    if (!password.trim()) {
+      setStatus("Informe a senha para entrar.");
+      return;
+    }
+
     try {
-      const isEmail = identifier.includes("@");
+      const normalizedIdentifier = identifier.trim();
+      const isEmail = normalizedIdentifier.includes("@");
 
       const response = await fetch(`${apiBaseUrl()}/auth/login`, {
         method: "POST",
@@ -29,8 +39,8 @@ export default function LoginPage(): JSX.Element {
           ...defaultAppHeaders(),
         },
         body: JSON.stringify({
-          ...(isEmail ? { email: identifier } : { phoneNumber: identifier }),
-          password,
+          ...(isEmail ? { email: normalizedIdentifier } : { phoneNumber: normalizedIdentifier }),
+          password: password.trim(),
         }),
       });
 
@@ -66,7 +76,7 @@ export default function LoginPage(): JSX.Element {
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
             className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2"
-            placeholder="admin@empresa.com ou +5511999999999"
+            placeholder=""
           />
         </label>
 
@@ -97,4 +107,5 @@ export default function LoginPage(): JSX.Element {
     </div>
   );
 }
+
 

@@ -1,74 +1,136 @@
-﻿import { DataOpsPanel } from "../../components/DataOpsPanel";
-import { PageHeader } from "../../components/PageHeader";
+"use client";
 
-const audits = [
-  { actor: "Admin", action: "Aprovou variacao B", target: "Campanha Outono", when: "ha 3 min" },
-  { actor: "Lucas", action: "Marcou contato como DNC", target: "Bruno Silva", when: "ha 12 min" },
-  { actor: "Sistema", action: "Webhook validado", target: "meta.signature", when: "ha 16 min" },
-  { actor: "Ana", action: "Exportou dados LGPD", target: "request_2391", when: "ha 36 min" },
-] as const;
+import { useEffect, useMemo, useState } from "react";
+import { DataOpsPanel } from "../../components/DataOpsPanel";
+import { PageHeader } from "../../components/PageHeader";
+import { apiBaseUrl } from "../../lib/apiBase";
+import { defaultAppHeaders } from "../../lib/apiClient";
+
+type Contact = {
+  readonly id: string;
+  readonly doNotContact: boolean;
+};
+
+type MessageRecord = {
+  readonly id: string;
+  readonly status: "received" | "queued" | "sent" | "delivered" | "read" | "failed";
+  readonly timestamp: string;
+};
+
+type Campaign = {
+  readonly id: string;
+  readonly name: string;
+  readonly approvedVariation?: string;
+  readonly approvalTimestamp?: string;
+};
 
 export default function CompliancePage(): JSX.Element {
+  const [contacts, setContacts] = useState<readonly Contact[]>([]);
+  const [messages, setMessages] = useState<readonly MessageRecord[]>([]);
+  const [campaigns, setCampaigns] = useState<readonly Campaign[]>([]);
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    const load = async (): Promise<void> => {
+      try {
+        const headers = defaultAppHeaders();
+        const [contactsRes, messagesRes, campaignsRes] = await Promise.all([
+          fetch(`${apiBaseUrl()}/contacts`, { headers }),
+          fetch(`${apiBaseUrl()}/messages`, { headers }),
+          fetch(`${apiBaseUrl()}/campaigns`, { headers }),
+        ]);
+
+        if (!contactsRes.ok || !messagesRes.ok || !campaignsRes.ok) {
+          setStatus("Falha ao carregar dados reais de compliance.");
+          return;
+        }
+
+        const contactsData = (await contactsRes.json()) as Contact[];
+        const messagesData = (await messagesRes.json()) as MessageRecord[];
+        const campaignsData = (await campaignsRes.json()) as Campaign[];
+        setContacts(contactsData);
+        setMessages(messagesData);
+        setCampaigns(campaignsData);
+        setStatus("Compliance sincronizado com dados reais de contatos, mensagens e campanhas.");
+      } catch (error) {
+        setStatus(`Erro ao carregar compliance: ${String(error)}`);
+      }
+    };
+
+    void load();
+  }, []);
+
+  const dncCount = useMemo(
+    () => contacts.filter((contact) => contact.doNotContact).length,
+    [contacts],
+  );
+  const failedCount = useMemo(
+    () => messages.filter((message) => message.status === "failed").length,
+    [messages],
+  );
+  const approvedCampaigns = useMemo(
+    () => campaigns.filter((campaign) => Boolean(campaign.approvedVariation)),
+    [campaigns],
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Compliance e Privacidade"
-        subtitle="Controles de consentimento, opt-out, retencao, exportacao de dados e governanca GDPR/LGPD."
+        subtitle="Controles de consentimento, opt-out e aprovacao de campanhas com dados reais."
         actions={["Nova policy", "Exportar auditoria", "Executar DSR"]}
+        metrics={[
+          { label: "Contatos DNC", value: String(dncCount) },
+          { label: "Mensagens com falha", value: String(failedCount) },
+          { label: "Campanhas aprovadas", value: String(approvedCampaigns.length) },
+        ]}
       />
 
       <section className="grid gap-4 2xl:grid-cols-12">
         <article className="section-card 2xl:col-span-6">
           <h3 className="text-xl font-bold">Checklist Operacional</h3>
           <ul className="mt-4 space-y-2 text-sm">
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">✅ Consentimento versionado com prova.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">✅ Opt-out por STOP/UNSUBSCRIBE/CANCEL ativo.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">✅ Direito de exportacao e exclusao disponivel.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">✅ Processamento com auditoria por ator.</li>
-            <li className="rounded-lg border border-white/10 bg-black/20 p-2">⚠️ Politica de retencao por tenant em revisao legal.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Consentimento versionado: validado por endpoint de contatos e consent logs.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Opt-out ativo: {dncCount} contatos com do_not_contact.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Aprovacao humana em campanhas: {approvedCampaigns.length} campanhas com variacao aprovada.</li>
+            <li className="rounded-lg border border-white/10 bg-black/20 p-2">Monitoramento de falhas: {failedCount} mensagens com status failed.</li>
           </ul>
         </article>
 
         <article className="section-card 2xl:col-span-6">
-          <h3 className="text-xl font-bold">DSR (Solicitacoes de Titular)</h3>
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-slate-300">
-                  <th className="px-3 py-2">ID</th>
-                  <th className="px-3 py-2">Tipo</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Prazo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-white/5"><td className="px-3 py-2">REQ-2391</td><td className="px-3 py-2">Exportacao</td><td className="px-3 py-2">Em andamento</td><td className="px-3 py-2">3 dias</td></tr>
-                <tr className="border-b border-white/5"><td className="px-3 py-2">REQ-2384</td><td className="px-3 py-2">Exclusao</td><td className="px-3 py-2">Concluido</td><td className="px-3 py-2">-</td></tr>
-                <tr className="border-b border-white/5"><td className="px-3 py-2">REQ-2378</td><td className="px-3 py-2">Correcao</td><td className="px-3 py-2">Aguardando</td><td className="px-3 py-2">6 dias</td></tr>
-              </tbody>
-            </table>
+          <h3 className="text-xl font-bold">Solicitacoes de Titular (DSR)</h3>
+          <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
+            O fluxo DSR real pode ser executado via endpoints de exportacao/exclusao de contato.
+            Use a tela de clientes para exclusao e exporte dados operacionais para evidencias.
           </div>
         </article>
       </section>
 
       <section className="section-card">
-        <h3 className="text-xl font-bold">Trilha de Auditoria</h3>
+        <h3 className="text-xl font-bold">Trilha de Auditoria de Campanhas</h3>
         <div className="mt-4 space-y-3">
-          {audits.map((item) => (
-            <div key={`${item.actor}-${item.when}`} className="rounded-xl border border-white/10 bg-black/20 p-3">
-              <p className="font-semibold">{item.actor}</p>
-              <p className="mt-1 text-sm text-slate-300">{item.action}</p>
-              <p className="mt-1 text-sm text-slate-300">{item.target} • {item.when}</p>
+          {approvedCampaigns.map((campaign) => (
+            <div key={campaign.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
+              <p className="font-semibold">{campaign.name}</p>
+              <p className="mt-1 text-sm text-slate-300">Variacao aprovada: {campaign.approvedVariation}</p>
+              <p className="mt-1 text-sm text-slate-300">
+                Data: {campaign.approvalTimestamp ? new Date(campaign.approvalTimestamp).toLocaleString() : "nao informada"}
+              </p>
             </div>
           ))}
+          {approvedCampaigns.length === 0 ? (
+            <p className="text-sm text-slate-300">Sem campanhas aprovadas para auditoria no momento.</p>
+          ) : null}
         </div>
       </section>
 
       <DataOpsPanel
         scopeLabel="Consentimentos, DSR e trilhas de auditoria"
-        importHint="Importe historico legal legado para centralizar governanca de dados."
-        exportHint="Exporte dossie completo por contato para atendimento de solicitacoes legais."
+        importHint="Importe historico legal para consolidar trilhas de governanca."
+        exportHint="Exporte dossie por contato/campanha para atendimento legal e auditorias."
       />
+
+      <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">{status}</div>
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function useActionEngine(): ActionEngine {
     const ics = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//WhatsApp Marketing SaaS//Agenda//PT-BR",
+      "PRODID:-//WhatsApp Marketing SaaS//Agenda//ES-ES",
       "BEGIN:VEVENT",
       `UID:agenda-${now.getTime()}@whatsapp-marketing-project`,
       `DTSTAMP:${toUtcStamp(now)}`,

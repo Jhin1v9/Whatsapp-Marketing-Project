@@ -1,7 +1,9 @@
 export type ActionIntent =
   | "nav_add_lead"
   | "nav_campaigns"
+  | "nav_bulk_send"
   | "nav_inbox"
+  | "nav_messages"
   | "nav_reports"
   | "nav_support"
   | "nav_crm"
@@ -37,7 +39,7 @@ function normalize(text: string): string {
 export function resolveActionIntent(actionLabel: string): ActionIntent {
   const action = normalize(actionLabel);
 
-  if (action.includes("atualizar")) return "refresh";
+  if (action.includes("atualizar") || action.includes("recarregar")) return "refresh";
   if (action === "voltar") return "go_back";
   if (action.includes("exportar ical")) return "export_ical";
   if (action.includes("compartilhar")) return "share_link";
@@ -47,7 +49,9 @@ export function resolveActionIntent(actionLabel: string): ActionIntent {
     action.includes("pausar execucao") ||
     action.includes("aprovar lote") ||
     action.includes("gerar 3 variacoes") ||
+    action.includes("gerar variacoes") ||
     action.includes("configurar tom de voz") ||
+    action.includes("aplicar no template") ||
     action.includes("agendar")
   ) {
     return "save_checkpoint";
@@ -55,6 +59,7 @@ export function resolveActionIntent(actionLabel: string): ActionIntent {
   if (action.includes("sincronizar google")) return "open_google";
   if (action.includes("baixar fatura") || action.includes("gerar agora")) return "export_json";
   if (action.includes("inbox")) return "nav_inbox";
+  if (action.includes("mensagem")) return "nav_messages";
   if (action.includes("relatorio")) return "nav_reports";
   if (action.includes("suporte")) return "nav_support";
   if (action.includes("editar credenciais")) return "nav_integrations";
@@ -70,6 +75,7 @@ export function resolveActionIntent(actionLabel: string): ActionIntent {
   if (action.includes("novo card") || action.includes("auto-priorizar") || action.includes("salvar visao")) return "nav_pipeline";
   if (action.includes("duplicar workspace") || action.includes("exportar configuracao")) return "nav_integrations";
   if (action.includes("campanha")) return "nav_campaigns";
+  if (action.includes("envio em massa") || action.includes("disparo em massa") || action.includes("broadcast") || action.includes("disparo")) return "nav_bulk_send";
   if (action.includes("lead") || action.includes("cliente") || action.includes("contato")) return "nav_add_lead";
 
   if (action.includes("importar xlsx") || action.includes("importacao xlsx") || action.includes("importar planilha")) return "import_xlsx";
@@ -85,7 +91,9 @@ export function resolveActionIntent(actionLabel: string): ActionIntent {
 export function routeByIntent(intent: ActionIntent): string | null {
   if (intent === "nav_add_lead") return "/clientes/novo";
   if (intent === "nav_campaigns") return "/campanhas";
+  if (intent === "nav_bulk_send") return "/envio-massa";
   if (intent === "nav_inbox") return "/inbox";
+  if (intent === "nav_messages") return "/mensagens";
   if (intent === "nav_reports") return "/relatorios";
   if (intent === "nav_support") return "/base-conhecimento";
   if (intent === "nav_crm") return "/crm";

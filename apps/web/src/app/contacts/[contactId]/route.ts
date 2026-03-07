@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contactDetails, contextFromHeaders, updateContact } from "../../../lib/server/runtimeStore";
+import { withRuntimeCookie } from "../../../lib/server/runtimeCookie";
 
 type UpdateContactPayload = {
   readonly phoneNumber?: string;
@@ -17,12 +18,12 @@ export async function GET(
   { params }: { readonly params: { readonly contactId: string } },
 ): Promise<NextResponse> {
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const data = contactDetails(context, params.contactId);
-    return NextResponse.json(data, { status: 200 });
+    return withRuntimeCookie(NextResponse.json(data, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao buscar contato.";
-    return NextResponse.json({ error: message }, { status: 404 });
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 404 }));
   }
 }
 
@@ -31,12 +32,12 @@ export async function PATCH(
   { params }: { readonly params: { readonly contactId: string } },
 ): Promise<NextResponse> {
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const payload = (await request.json()) as UpdateContactPayload;
     const updated = updateContact(context, params.contactId, payload);
-    return NextResponse.json(updated, { status: 200 });
+    return withRuntimeCookie(NextResponse.json(updated, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao atualizar contato.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 400 }));
   }
 }

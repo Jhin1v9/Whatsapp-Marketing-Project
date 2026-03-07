@@ -13,6 +13,8 @@ type GoogleFormImportResult = {
 export class GoogleFormsService {
   constructor(private readonly contactsService: ContactsService) {}
 
+  private readonly defaultPhoneCountryCode = process.env.DEFAULT_PHONE_COUNTRY_CODE?.replace(/\D/g, "") || "34";
+
   importSubmission(
     context: RequestContext,
     payload: GoogleFormSubmissionDto,
@@ -85,7 +87,7 @@ export class GoogleFormsService {
     const fullName = payload.fullName?.trim();
     if (fullName) {
       const parts = fullName.split(/\s+/).filter((part) => part.length > 0);
-      const first = parts[0] ?? "Lead";
+      const first = parts[0] ?? "Contacto";
       const rest = parts.slice(1).join(" ");
       return {
         firstName: first,
@@ -93,7 +95,7 @@ export class GoogleFormsService {
       };
     }
 
-    return { firstName: "Lead" };
+    return { firstName: "Contacto" };
   }
 
   private normalizePhoneNumber(input?: string): string | null {
@@ -116,9 +118,9 @@ export class GoogleFormsService {
       return `+${digits}`;
     }
 
-    // Heuristic for BR local forms without country code.
-    if (/^\d{10,11}$/.test(digits)) {
-      return `+55${digits}`;
+    // Heuristic for local forms without country code, using configured default country code.
+    if (/^\d{9}$/.test(digits)) {
+      return `+${this.defaultPhoneCountryCode}${digits}`;
     }
 
     if (/^[1-9]\d{7,14}$/.test(digits)) {

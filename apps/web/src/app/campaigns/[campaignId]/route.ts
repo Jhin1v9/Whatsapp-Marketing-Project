@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { contextFromHeaders, updateCampaign } from "../../../lib/server/runtimeStore";
+import { contextFromHeaders, deleteCampaign, updateCampaign } from "../../../lib/server/runtimeStore";
+import { withRuntimeCookie } from "../../../lib/server/runtimeCookie";
 
 type UpdateCampaignPayload = {
   readonly name?: string;
@@ -13,12 +14,26 @@ export async function PATCH(
   { params }: { readonly params: { readonly campaignId: string } },
 ): Promise<NextResponse> {
   try {
-    const context = contextFromHeaders(request.headers);
+    const context = await contextFromHeaders(request.headers);
     const payload = (await request.json()) as UpdateCampaignPayload;
     const updated = updateCampaign(context, params.campaignId, payload);
-    return NextResponse.json(updated, { status: 200 });
+    return withRuntimeCookie(NextResponse.json(updated, { status: 200 }));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao atualizar campanha.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 400 }));
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { readonly params: { readonly campaignId: string } },
+): Promise<NextResponse> {
+  try {
+    const context = await contextFromHeaders(request.headers);
+    const deleted = deleteCampaign(context, params.campaignId);
+    return withRuntimeCookie(NextResponse.json(deleted, { status: 200 }));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Falha ao remover campanha.";
+    return withRuntimeCookie(NextResponse.json({ error: message }, { status: 400 }));
   }
 }

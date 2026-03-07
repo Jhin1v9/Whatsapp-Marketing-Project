@@ -91,15 +91,15 @@ export class CampaignsService {
     const drafts: readonly AiDraft[] = [
       {
         variation: "A",
-        content: `Oi {{first_name}}, temos uma oferta especial: ${payload.goal}. Quer ver os horarios desta semana?`,
+        content: `Hola {{first_name}}, tenemos una oferta especial: ${payload.goal}. Quieres ver los horarios de esta semana?`,
       },
       {
         variation: "B",
-        content: `{{first_name}}, preparamos uma condicao exclusiva para ${payload.goal}. Posso te enviar os valores agora?`,
+        content: `{{first_name}}, preparamos una condicion exclusiva para ${payload.goal}. Te envio los valores ahora?`,
       },
       {
         variation: "C",
-        content: `Campanha ${campaign.name}: ${payload.goal}. Tom ${tone}. Deseja agendar com prioridade?`,
+        content: `Campanha ${campaign.name}: ${payload.goal}. Tono ${tone}. Quieres agendar con prioridad?`,
       },
     ];
 
@@ -155,7 +155,7 @@ export class CampaignsService {
 
       const contact = this.contactsService.upsertByPhone(context, {
         phoneNumber,
-        firstName: "Lead",
+        firstName: "Contacto",
         source: "campaign_run",
       });
 

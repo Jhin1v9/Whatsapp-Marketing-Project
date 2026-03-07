@@ -17,7 +17,9 @@ export const navSections: readonly NavSection[] = [
     items: [
       { href: "/", label: "Visao Geral", description: "KPIs e operacao", icon: "🏠" },
       { href: "/inbox", label: "Inbox", description: "WhatsApp + Instagram", icon: "💬", badge: "Tempo real" },
+      { href: "/mensagens", label: "Mensagens", description: "Lista organizada por contexto", icon: "✉️" },
       { href: "/campanhas", label: "Campanhas", description: "A/B e execucao", icon: "📣" },
+      { href: "/envio-massa", label: "Envio em Massa", description: "Selecionar e disparar para varios", icon: "📨" },
       { href: "/automacoes", label: "Automacoes", description: "Fluxos e filas", icon: "🤖" },
       { href: "/crm", label: "CRM", description: "Pipeline e contatos", icon: "👥" },
       { href: "/clientes", label: "Clientes", description: "Listar, editar e excluir", icon: "🗂️" },

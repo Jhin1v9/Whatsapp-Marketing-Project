@@ -36,7 +36,7 @@ export default function AnalyticsPage(): JSX.Element {
   const [messages, setMessages] = useState<readonly MessageRecord[]>([]);
   const [campaigns, setCampaigns] = useState<readonly CampaignRecord[]>([]);
   const [contacts, setContacts] = useState<readonly ContactRecord[]>([]);
-  const [status, setStatus] = useState("Carregando analytics...");
+  const [status, setStatus] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
     try {
@@ -112,18 +112,14 @@ export default function AnalyticsPage(): JSX.Element {
   }, [messages]);
 
   const campaignRows = useMemo(() => {
+    const totalAudience = campaigns.reduce((sum, campaign) => sum + campaign.recipients.length, 0);
     return campaigns.map((campaign) => {
       const audience = campaign.recipients.length;
-      const syntheticRevenue = audience * 180;
-      const syntheticCost = Math.max(120, audience * 22);
-      const roi = syntheticCost > 0 ? Math.round((syntheticRevenue / syntheticCost) * 100) / 100 : 0;
       return {
         name: campaign.name,
         status: campaign.status,
         audience,
-        roi,
-        revenue: syntheticRevenue,
-        cost: syntheticCost,
+        audienceShare: percent(audience, totalAudience),
       };
     });
   }, [campaigns]);
@@ -202,7 +198,7 @@ export default function AnalyticsPage(): JSX.Element {
       </section>
 
       <section className="section-card">
-        <h3 className="text-xl font-bold">Campanhas (estimativa operacional)</h3>
+        <h3 className="text-xl font-bold">Campanhas (dados reais)</h3>
         <div className="mt-4 space-y-3">
           {campaignRows.map((campaign) => (
             <div key={campaign.name} className="rounded-xl border border-white/10 bg-black/20 p-3">
@@ -211,7 +207,7 @@ export default function AnalyticsPage(): JSX.Element {
                 <span className="text-xs text-slate-300">{campaign.status}</span>
               </div>
               <p className="mt-1 text-sm text-slate-300">
-                Audiencia: {campaign.audience} • Custo estimado: R$ {campaign.cost} • Receita estimada: R$ {campaign.revenue} • ROI: {campaign.roi}x
+                Audiencia: {campaign.audience} • Participacao na audiencia total: {campaign.audienceShare}%
               </p>
             </div>
           ))}

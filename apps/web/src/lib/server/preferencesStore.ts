@@ -1,3 +1,10 @@
+import {
+  getSupabaseJson,
+  isRemotePersistenceRequired,
+  isSupabaseKvConfigured,
+  setSupabaseJson,
+} from "./supabaseKv";
+
 export type PreferenceJson =
   | string
   | number
@@ -13,6 +20,13 @@ type PreferencesContext = {
 };
 
 const memoryStore = new Map<string, PreferenceJson>();
+const PREFERENCES_NAMESPACE = "wm_preferences_v1";
+
+function assertRemotePersistenceAvailability(): void {
+  if (isRemotePersistenceRequired() && !isSupabaseKvConfigured()) {
+    throw new Error("Persistencia remota obrigatoria: configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.");
+  }
+}
 
 function readDefault(value: string | null, fallback: string): string {
   const trimmed = value?.trim();
@@ -32,7 +46,15 @@ export function contextFromHeaders(headers: Headers): PreferencesContext {
 }
 
 export async function getPreference(context: PreferencesContext, key: string): Promise<PreferenceJson | null> {
+  assertRemotePersistenceAvailability();
   const storageKey = compositeKey(context, key);
+  if (isSupabaseKvConfigured()) {
+    const value = await getSupabaseJson(PREFERENCES_NAMESPACE, storageKey);
+    if (value === null) {
+      return null;
+    }
+    return value as PreferenceJson;
+  }
   return memoryStore.get(storageKey) ?? null;
 }
 
@@ -41,10 +63,14 @@ export async function setPreference(
   key: string,
   value: PreferenceJson,
 ): Promise<void> {
+  assertRemotePersistenceAvailability();
   const storageKey = compositeKey(context, key);
+  if (isSupabaseKvConfigured()) {
+    await setSupabaseJson(PREFERENCES_NAMESPACE, storageKey, value);
+  }
   memoryStore.set(storageKey, value);
 }
 
 export function hasPersistentStoreConfigured(): boolean {
-  return false;
+  return isSupabaseKvConfigured();
 }

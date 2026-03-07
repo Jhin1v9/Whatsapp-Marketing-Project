@@ -1,10 +1,12 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { useActionEngine } from "../hooks/useActionEngine";
 
 type PageMetric = {
   readonly label: string;
   readonly value: string;
+  readonly href?: string;
 };
 
 type PageHeaderProps = {
@@ -13,10 +15,19 @@ type PageHeaderProps = {
   readonly icon?: string;
   readonly actions?: readonly string[];
   readonly metrics?: readonly PageMetric[];
+  readonly onAction?: (action: string) => Promise<void> | void;
 };
 
-export function PageHeader({ title, subtitle, icon, actions, metrics }: PageHeaderProps): JSX.Element {
+export function PageHeader({ title, subtitle, icon, actions, metrics, onAction }: PageHeaderProps): JSX.Element {
   const engine = useActionEngine();
+
+  const handleAction = async (action: string): Promise<void> => {
+    if (onAction) {
+      await onAction(action);
+      return;
+    }
+    await engine.runAction(action);
+  };
 
   return (
     <section className="section-card">
@@ -30,11 +41,21 @@ export function PageHeader({ title, subtitle, icon, actions, metrics }: PageHead
 
           {metrics && metrics.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-2">
-              {metrics.map((metric) => (
-                <span key={metric.label} className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs">
-                  {metric.label}: <strong>{metric.value}</strong>
-                </span>
-              ))}
+              {metrics.map((metric) =>
+                metric.href ? (
+                  <Link
+                    key={metric.label}
+                    href={metric.href}
+                    className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs transition hover:border-accent/40"
+                  >
+                    {metric.label}: <strong>{metric.value}</strong>
+                  </Link>
+                ) : (
+                  <span key={metric.label} className="rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs">
+                    {metric.label}: <strong>{metric.value}</strong>
+                  </span>
+                ),
+              )}
             </div>
           ) : null}
         </div>
@@ -43,7 +64,7 @@ export function PageHeader({ title, subtitle, icon, actions, metrics }: PageHead
             {actions.map((action) => (
               <button
                 key={action}
-                onClick={() => void engine.runAction(action)}
+                onClick={() => void handleAction(action)}
                 disabled={engine.busy}
                 className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
               >

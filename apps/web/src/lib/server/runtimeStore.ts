@@ -1,7 +1,15 @@
 import { createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { deflateRawSync, inflateRawSync } from "zlib";
 import * as XLSX from "xlsx";
+import {
+  getSupabaseJson,
+  isRemotePersistenceRequired,
+  isSupabaseKvConfigured,
+  setSupabaseJson,
+} from "./supabaseKv";
 
 export type UserRole = "OWNER" | "ADMIN" | "AGENT" | "MARKETING_MANAGER" | "ANALYST";
+export type UserStatus = "ACTIVE" | "INACTIVE";
 
 export type RequestContext = {
   readonly tenantId: string;
@@ -17,7 +25,18 @@ type AuthUser = {
   readonly workspaceId: string;
   readonly name: string;
   readonly role: UserRole;
+  readonly status?: UserStatus;
   readonly password: string;
+  readonly email?: string;
+  readonly phoneNumber?: string;
+};
+
+export type ManagedUser = {
+  readonly id: string;
+  readonly name: string;
+  readonly role: UserRole;
+  readonly workspaceId: string;
+  readonly status: UserStatus;
   readonly email?: string;
   readonly phoneNumber?: string;
 };
@@ -88,6 +107,7 @@ export type MessageRecord = {
   readonly status: DeliveryStatus;
   readonly timestamp: string;
   readonly externalMessageId?: string;
+  readonly mediaUrl?: string;
 };
 
 export type CampaignStatus = "draft" | "scheduled" | "running" | "paused" | "completed";
@@ -129,9 +149,22 @@ type RuntimeStore = {
   };
 };
 
+const RUNTIME_STORE_COOKIE = "wm_runtime_v1";
+const RUNTIME_STORE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const RUNTIME_STORE_COOKIE_LIMIT = 3600;
+const RUNTIME_STORE_SUPABASE_NAMESPACE = "wm_runtime_store_v1";
+
 declare global {
   // eslint-disable-next-line no-var
   var __whatsappMarketingRuntimeStore: RuntimeStore | undefined;
+  // eslint-disable-next-line no-var
+  var __whatsappMarketingRuntimeStoreDirty: boolean | undefined;
+  // eslint-disable-next-line no-var
+  var __whatsappMarketingRuntimeStoreHydratedKey: string | undefined;
+  // eslint-disable-next-line no-var
+  var __whatsappMarketingRuntimeStoreHydratePromise: Promise<void> | undefined;
+  // eslint-disable-next-line no-var
+  var __whatsappMarketingRuntimeStorePersistPromise: Promise<void> | undefined;
 }
 
 function readDefault(value: string | null | undefined, fallback: string): string {
@@ -140,15 +173,27 @@ function readDefault(value: string | null | undefined, fallback: string): string
 }
 
 function defaultTenantId(): string {
-  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID, "tenant_main");
+  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID, "tenant_default");
 }
 
 function defaultWorkspaceId(): string {
-  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID, "workspace_main");
+  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID, "workspace_default");
 }
 
 function defaultUserId(): string {
-  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_USER_ID, "user_admin");
+  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_USER_ID, "user_default");
+}
+
+function defaultUserName(): string {
+  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_USER_NAME, defaultUserId());
+}
+
+function defaultUserEmail(): string {
+  return readDefault(process.env.NEXT_PUBLIC_DEFAULT_USER_EMAIL, `${defaultUserId()}@app.local`);
+}
+
+function defaultAdminPassword(): string {
+  return readDefault(process.env.DEFAULT_ADMIN_PASSWORD, "admin");
 }
 
 function nowIso(): string {
@@ -170,10 +215,11 @@ function getStore(): RuntimeStore {
         id: fallbackUserId,
         tenantId,
         workspaceId,
-        name: "Admin Local",
+        name: defaultUserName(),
         role: "ADMIN",
-        password: "7741",
-        email: "admin@local.test",
+        status: "ACTIVE",
+        password: defaultAdminPassword(),
+        email: defaultUserEmail(),
       },
     ],
     sessions: [],
@@ -191,6 +237,202 @@ function getStore(): RuntimeStore {
   };
 
   return globalThis.__whatsappMarketingRuntimeStore;
+}
+
+function runtimeStorePersistenceKey(): string {
+  return `${defaultTenantId()}:${defaultWorkspaceId()}:runtime`;
+}
+
+function isRuntimeStoreShape(value: unknown): value is RuntimeStore {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const parsed = value as Partial<RuntimeStore>;
+  return (
+    Array.isArray(parsed.users) &&
+    Array.isArray(parsed.sessions) &&
+    Array.isArray(parsed.contacts) &&
+    Array.isArray(parsed.consents) &&
+    Array.isArray(parsed.messages) &&
+    Array.isArray(parsed.campaigns) &&
+    !!parsed.counters &&
+    typeof parsed.counters === "object" &&
+    typeof parsed.counters.user === "number" &&
+    typeof parsed.counters.contact === "number" &&
+    typeof parsed.counters.consent === "number" &&
+    typeof parsed.counters.message === "number" &&
+    typeof parsed.counters.campaign === "number"
+  );
+}
+
+function cloneRuntimeStore(store: RuntimeStore): RuntimeStore {
+  return JSON.parse(JSON.stringify(store)) as RuntimeStore;
+}
+
+function markRuntimeStoreDirty(): void {
+  globalThis.__whatsappMarketingRuntimeStoreDirty = true;
+}
+
+export function consumeRuntimeStoreDirty(): boolean {
+  const dirty = globalThis.__whatsappMarketingRuntimeStoreDirty === true;
+  globalThis.__whatsappMarketingRuntimeStoreDirty = false;
+  return dirty;
+}
+
+function queueRuntimeStorePersist(task: () => Promise<void>): Promise<void> {
+  const previous = globalThis.__whatsappMarketingRuntimeStorePersistPromise ?? Promise.resolve();
+  const next = previous.catch(() => undefined).then(task);
+  globalThis.__whatsappMarketingRuntimeStorePersistPromise = next;
+  return next;
+}
+
+export function hasRuntimePersistentStoreConfigured(): boolean {
+  return isSupabaseKvConfigured();
+}
+
+function assertRemotePersistenceAvailability(): void {
+  if (isRemotePersistenceRequired() && !isSupabaseKvConfigured()) {
+    throw new Error("Persistencia remota obrigatoria: configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.");
+  }
+}
+
+export async function ensureRuntimeStoreHydrated(): Promise<void> {
+  assertRemotePersistenceAvailability();
+  if (!isSupabaseKvConfigured()) {
+    return;
+  }
+
+  const persistenceKey = runtimeStorePersistenceKey();
+  if (globalThis.__whatsappMarketingRuntimeStoreHydratedKey === persistenceKey) {
+    return;
+  }
+
+  if (!globalThis.__whatsappMarketingRuntimeStoreHydratePromise) {
+    globalThis.__whatsappMarketingRuntimeStoreHydratePromise = (async () => {
+      const remote = await getSupabaseJson(RUNTIME_STORE_SUPABASE_NAMESPACE, persistenceKey);
+      if (remote && isRuntimeStoreShape(remote)) {
+        globalThis.__whatsappMarketingRuntimeStore = remote;
+      } else {
+        const snapshot = cloneRuntimeStore(getStore());
+        await setSupabaseJson(RUNTIME_STORE_SUPABASE_NAMESPACE, persistenceKey, snapshot);
+      }
+      globalThis.__whatsappMarketingRuntimeStoreDirty = false;
+      globalThis.__whatsappMarketingRuntimeStoreHydratedKey = persistenceKey;
+    })().finally(() => {
+      globalThis.__whatsappMarketingRuntimeStoreHydratePromise = undefined;
+    });
+  }
+
+  await globalThis.__whatsappMarketingRuntimeStoreHydratePromise;
+}
+
+export async function persistRuntimeStoreToSupabase(): Promise<void> {
+  assertRemotePersistenceAvailability();
+  if (!isSupabaseKvConfigured()) {
+    return;
+  }
+
+  const persistenceKey = runtimeStorePersistenceKey();
+  const snapshot = cloneRuntimeStore(getStore());
+  await queueRuntimeStorePersist(async () => {
+    await setSupabaseJson(RUNTIME_STORE_SUPABASE_NAMESPACE, persistenceKey, snapshot);
+    globalThis.__whatsappMarketingRuntimeStoreHydratedKey = persistenceKey;
+  });
+}
+
+function parseCookiesHeader(rawCookieHeader: string | null): Record<string, string> {
+  if (!rawCookieHeader) return {};
+  return rawCookieHeader
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .reduce<Record<string, string>>((acc, item) => {
+      const eqIndex = item.indexOf("=");
+      if (eqIndex <= 0) return acc;
+      const key = item.slice(0, eqIndex).trim();
+      const value = item.slice(eqIndex + 1).trim();
+      if (key.length > 0) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+}
+
+function compactStoreForCookie(store: RuntimeStore): RuntimeStore {
+  return {
+    users: store.users.slice(0, 50),
+    sessions: store.sessions.slice(0, 100),
+    contacts: store.contacts.slice(0, 150),
+    consents: store.consents.slice(0, 200),
+    messages: store.messages.slice(0, 250),
+    campaigns: store.campaigns.slice(0, 80),
+    counters: { ...store.counters },
+  };
+}
+
+function encodeStoreCookieValue(store: RuntimeStore): string | null {
+  try {
+    const compact = compactStoreForCookie(store);
+    const json = JSON.stringify(compact);
+    const compressed = deflateRawSync(Buffer.from(json, "utf8"));
+    const encoded = compressed.toString("base64url");
+    if (encoded.length > RUNTIME_STORE_COOKIE_LIMIT) {
+      return null;
+    }
+    return encoded;
+  } catch {
+    return null;
+  }
+}
+
+function decodeStoreCookieValue(raw: string): RuntimeStore | null {
+  try {
+    const inflated = inflateRawSync(Buffer.from(raw, "base64url")).toString("utf8");
+    const parsed = JSON.parse(inflated) as RuntimeStore;
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !Array.isArray(parsed.users) ||
+      !Array.isArray(parsed.sessions) ||
+      !Array.isArray(parsed.contacts) ||
+      !Array.isArray(parsed.consents) ||
+      !Array.isArray(parsed.messages) ||
+      !Array.isArray(parsed.campaigns) ||
+      !parsed.counters ||
+      typeof parsed.counters !== "object"
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function hydrateStoreFromCookie(headers: Headers): void {
+  const cookies = parseCookiesHeader(headers.get("cookie"));
+  const raw = cookies[RUNTIME_STORE_COOKIE];
+  if (!raw) return;
+
+  const hydrated = decodeStoreCookieValue(raw);
+  if (!hydrated) return;
+
+  globalThis.__whatsappMarketingRuntimeStore = hydrated;
+}
+
+export function runtimeStoreSetCookieValue(): string | null {
+  if (isSupabaseKvConfigured()) {
+    return null;
+  }
+
+  const store = getStore();
+  const encoded = encodeStoreCookieValue(store);
+  if (!encoded) {
+    return null;
+  }
+
+  return `${RUNTIME_STORE_COOKIE}=${encoded}; Path=/; Max-Age=${RUNTIME_STORE_COOKIE_MAX_AGE_SECONDS}; HttpOnly; SameSite=Lax`;
 }
 
 function parseAuthorizationToken(headers: Headers): string | null {
@@ -211,14 +453,40 @@ function parseAuthorizationToken(headers: Headers): string | null {
   return token.trim();
 }
 
-function parseRole(raw: string | null): UserRole {
+function parseRole(raw: string | null | undefined): UserRole {
   if (raw === "OWNER" || raw === "ADMIN" || raw === "AGENT" || raw === "MARKETING_MANAGER" || raw === "ANALYST") {
     return raw;
   }
   return "ADMIN";
 }
 
-export function contextFromHeaders(headers: Headers): RequestContext {
+function parseUserStatus(raw: string | null | undefined): UserStatus {
+  return raw === "INACTIVE" ? "INACTIVE" : "ACTIVE";
+}
+
+function normalizeWorkspaceId(raw: string | undefined, fallback: string): string {
+  const base = (raw?.trim() || fallback).replace(/\s+/g, "_");
+  const cleaned = base.replace(/[^a-zA-Z0-9_\-]/g, "");
+  return cleaned.length > 0 ? cleaned : fallback;
+}
+
+function userToManaged(user: AuthUser): ManagedUser {
+  return {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    workspaceId: user.workspaceId,
+    status: user.status ?? "ACTIVE",
+    ...(user.email ? { email: user.email } : {}),
+    ...(user.phoneNumber ? { phoneNumber: user.phoneNumber } : {}),
+  };
+}
+
+export async function contextFromHeaders(headers: Headers): Promise<RequestContext> {
+  await ensureRuntimeStoreHydrated();
+  if (!isSupabaseKvConfigured()) {
+    hydrateStoreFromCookie(headers);
+  }
   const store = getStore();
   const token = parseAuthorizationToken(headers);
 
@@ -245,8 +513,26 @@ export function contextFromHeaders(headers: Headers): RequestContext {
 }
 
 function normalizePhone(raw: string): string {
-  const digits = raw.replace(/[^\d+]/g, "");
-  const withPlus = digits.startsWith("+") ? digits : `+${digits}`;
+  const cleaned = raw.trim();
+  if (!cleaned) {
+    throw new Error("Telefone deve estar em formato E.164 valido.");
+  }
+
+  const defaultCountryCode = readDefault(process.env.DEFAULT_PHONE_COUNTRY_CODE, "34").replace(/\D/g, "");
+  const onlyDigits = cleaned.replace(/\D/g, "");
+
+  let withPlus = "";
+  if (cleaned.startsWith("+")) {
+    withPlus = `+${onlyDigits}`;
+  } else if (onlyDigits.startsWith("00") && onlyDigits.length > 2) {
+    withPlus = `+${onlyDigits.slice(2)}`;
+  } else if (defaultCountryCode && onlyDigits.length === 9) {
+    // Local Spanish-style input (9 digits) becomes E.164 with configured country code.
+    withPlus = `+${defaultCountryCode}${onlyDigits}`;
+  } else {
+    withPlus = `+${onlyDigits}`;
+  }
+
   if (!/^\+[1-9]\d{7,14}$/.test(withPlus)) {
     throw new Error("Telefone deve estar em formato E.164 valido.");
   }
@@ -272,6 +558,7 @@ function normalizeContextIdentifier(raw: string): string {
 function nextId(prefix: string, counter: keyof RuntimeStore["counters"]): string {
   const store = getStore();
   store.counters[counter] += 1;
+  markRuntimeStoreDirty();
   return `${prefix}_${store.counters[counter]}`;
 }
 
@@ -414,6 +701,7 @@ export function upsertContactByPhone(
   const index = store.contacts.findIndex((item) => item.id === existing.id);
   if (index >= 0) {
     store.contacts[index] = updated;
+    markRuntimeStoreDirty();
   }
   return updated;
 }
@@ -463,6 +751,7 @@ export function updateContact(
   const index = store.contacts.findIndex((item) => item.id === existing.id);
   if (index >= 0) {
     store.contacts[index] = updated;
+    markRuntimeStoreDirty();
   }
   return updated;
 }
@@ -502,6 +791,7 @@ export function optOutContact(context: RequestContext, contactId: string): Conta
   const index = store.contacts.findIndex((item) => item.id === contact.id);
   if (index >= 0) {
     store.contacts[index] = updated;
+    markRuntimeStoreDirty();
   }
   return updated;
 }
@@ -518,6 +808,7 @@ export function deleteContactData(context: RequestContext, contactId: string): {
 
   store.consents = store.consents.filter((item) => item.contactId !== contactId);
   store.contacts = store.contacts.filter((item) => item.id !== contactId);
+  markRuntimeStoreDirty();
 
   return {
     deletedContactId: contactId,
@@ -802,6 +1093,26 @@ export function listMessages(context: RequestContext): readonly MessageRecord[] 
   return store.messages.filter((item) => item.tenantId === context.tenantId && item.workspaceId === context.workspaceId);
 }
 
+export function deleteMessage(
+  context: RequestContext,
+  messageId: string,
+): { readonly deletedMessageId: string } {
+  const store = getStore();
+  const index = store.messages.findIndex((item) => item.id === messageId);
+  if (index < 0) {
+    throw new Error("Mensagem nao encontrada.");
+  }
+
+  const target = store.messages[index];
+  if (!target) {
+    throw new Error("Mensagem nao encontrada.");
+  }
+  assertScopedContext(target, context);
+  store.messages.splice(index, 1);
+  markRuntimeStoreDirty();
+  return { deletedMessageId: messageId };
+}
+
 export function createMessage(
   context: RequestContext,
   input: {
@@ -811,6 +1122,7 @@ export function createMessage(
     readonly text: string;
     readonly status: DeliveryStatus;
     readonly externalMessageId?: string;
+    readonly mediaUrl?: string;
   },
 ): MessageRecord {
   findContactOrThrow(context, input.contactId);
@@ -826,6 +1138,7 @@ export function createMessage(
     status: input.status,
     timestamp: nowIso(),
     ...(input.externalMessageId ? { externalMessageId: input.externalMessageId } : {}),
+    ...(input.mediaUrl ? { mediaUrl: input.mediaUrl } : {}),
   };
 
   const store = getStore();
@@ -847,10 +1160,10 @@ function normalizeProfileName(name?: string): string | undefined {
 
 function splitName(name?: string): { readonly firstName: string; readonly lastName?: string } {
   if (!name) {
-    return { firstName: "Lead" };
+    return { firstName: "Contato" };
   }
   const parts = name.split(" ").filter((part) => part.length > 0);
-  const firstName = parts[0] ?? "Lead";
+  const firstName = parts[0] ?? "Contato";
   const lastName = parts.slice(1).join(" ");
   return {
     firstName,
@@ -891,12 +1204,15 @@ export async function sendWhatsAppMessage(
   context: RequestContext,
   payload: {
     readonly contactId: string;
-    readonly text: string;
+    readonly text?: string;
+    readonly imageUrl?: string;
   },
 ): Promise<{
   readonly message: MessageRecord;
   readonly providerMessageId?: string;
   readonly providerStatus?: number;
+  readonly deliveryMode: "meta" | "queue_local";
+  readonly warning?: string;
 }> {
   const contact = findContactOrThrow(context, payload.contactId);
   if (contact.doNotContact) {
@@ -906,15 +1222,54 @@ export async function sendWhatsAppMessage(
     throw new Error("Contato sem telefone E.164 valido. Atualize o telefone antes de enviar WhatsApp.");
   }
 
-  const text = payload.text.trim();
-  if (!text) {
-    throw new Error("Texto da mensagem obrigatorio.");
+  const text = payload.text?.trim() ?? "";
+  const imageUrl = payload.imageUrl?.trim() ?? "";
+
+  if (!text && !imageUrl) {
+    throw new Error("Informe texto e/ou imagem para envio.");
+  }
+
+  if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+    throw new Error("URL da imagem invalida. Use http(s) com imagem publica.");
   }
 
   const token = readDefault(process.env.META_PERMANENT_TOKEN, "");
   const phoneNumberId = readDefault(process.env.META_PHONE_NUMBER_ID, "");
   if (!token || !phoneNumberId) {
-    throw new Error("META_PERMANENT_TOKEN e META_PHONE_NUMBER_ID precisam estar configurados no deploy.");
+    const allowLocalQueueRaw = readDefault(process.env.ALLOW_LOCAL_QUEUE_WITHOUT_META, "").toLowerCase();
+    const requireMetaDelivery = readDefault(process.env.REQUIRE_META_WHATSAPP_DELIVERY, "").toLowerCase() === "true";
+    const localFallbackEnabled = allowLocalQueueRaw ? allowLocalQueueRaw === "true" : !requireMetaDelivery;
+
+    if (!localFallbackEnabled) {
+      const failedRecord = createMessage(context, {
+        contactId: contact.id,
+        channel: "whatsapp",
+        direction: "outbound",
+        text: text || "Imagem enviada sem legenda.",
+        status: "failed",
+        ...(imageUrl ? { mediaUrl: imageUrl } : {}),
+      });
+      throw new Error(
+        `Envio real indisponivel. Configure META_PERMANENT_TOKEN e META_PHONE_NUMBER_ID no deploy e publique novamente. Registro local: ${failedRecord.id}`,
+      );
+    }
+
+    const queuedMessage = createMessage(context, {
+      contactId: contact.id,
+      channel: "whatsapp",
+      direction: "outbound",
+      text: text || "Imagem enviada sem legenda.",
+      status: "queued",
+      ...(imageUrl ? { mediaUrl: imageUrl } : {}),
+    });
+
+    return {
+      message: queuedMessage,
+      providerStatus: 202,
+      deliveryMode: "queue_local",
+      warning:
+        "Meta nao configurado no deploy. Mensagem colocada na fila local (nao entregue ao WhatsApp externo).",
+    };
   }
 
   const response = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, {
@@ -923,12 +1278,24 @@ export async function sendWhatsAppMessage(
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
     },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: contact.phoneNumber.replace(/\D/g, ""),
-      type: "text",
-      text: { body: text },
-    }),
+    body: JSON.stringify(
+      imageUrl
+        ? {
+            messaging_product: "whatsapp",
+            to: contact.phoneNumber.replace(/\D/g, ""),
+            type: "image",
+            image: {
+              link: imageUrl,
+              ...(text ? { caption: text } : {}),
+            },
+          }
+        : {
+            messaging_product: "whatsapp",
+            to: contact.phoneNumber.replace(/\D/g, ""),
+            type: "text",
+            text: { body: text },
+          },
+    ),
   });
 
   const providerStatus = response.status;
@@ -938,8 +1305,9 @@ export async function sendWhatsAppMessage(
       contactId: contact.id,
       channel: "whatsapp",
       direction: "outbound",
-      text,
+      text: text || "Imagem enviada sem legenda.",
       status: "failed",
+      ...(imageUrl ? { mediaUrl: imageUrl } : {}),
     });
     throw new Error(`Envio Meta falhou (${providerStatus}): ${detail || "sem detalhe"}. Registro local: ${failedRecord.id}`);
   }
@@ -953,15 +1321,84 @@ export async function sendWhatsAppMessage(
     contactId: contact.id,
     channel: "whatsapp",
     direction: "outbound",
-    text,
+    text: text || "Imagem enviada sem legenda.",
     status: "sent",
     ...(providerMessageId ? { externalMessageId: providerMessageId } : {}),
+    ...(imageUrl ? { mediaUrl: imageUrl } : {}),
   });
 
   return {
     message,
     ...(providerMessageId ? { providerMessageId } : {}),
     providerStatus,
+    deliveryMode: "meta",
+  };
+}
+
+export async function sendWhatsAppBulkMessages(
+  context: RequestContext,
+  payload: {
+    readonly contactIds: readonly string[];
+    readonly text?: string;
+    readonly imageUrl?: string;
+  },
+): Promise<{
+  readonly requested: number;
+  readonly sent: number;
+  readonly failed: number;
+  readonly results: readonly {
+    readonly contactId: string;
+    readonly ok: boolean;
+    readonly messageId?: string;
+    readonly error?: string;
+  }[];
+}> {
+  const uniqueContactIds = Array.from(new Set(payload.contactIds.map((item) => item.trim()).filter((item) => item.length > 0)));
+  if (uniqueContactIds.length === 0) {
+    throw new Error("Selecione ao menos um contato para envio em massa.");
+  }
+
+  const text = payload.text?.trim() ?? "";
+  const imageUrl = payload.imageUrl?.trim() ?? "";
+  if (!text && !imageUrl) {
+    throw new Error("Informe texto e/ou imagem para envio em massa.");
+  }
+
+  const results: Array<{
+    readonly contactId: string;
+    readonly ok: boolean;
+    readonly messageId?: string;
+    readonly error?: string;
+  }> = [];
+
+  for (const contactId of uniqueContactIds) {
+    try {
+      const sent = await sendWhatsAppMessage(context, {
+        contactId,
+        ...(text ? { text } : {}),
+        ...(imageUrl ? { imageUrl } : {}),
+      });
+
+      results.push({
+        contactId,
+        ok: true,
+        messageId: sent.message.id,
+      });
+    } catch (error) {
+      results.push({
+        contactId,
+        ok: false,
+        error: error instanceof Error ? error.message : "Falha no envio.",
+      });
+    }
+  }
+
+  const sentCount = results.filter((item) => item.ok).length;
+  return {
+    requested: uniqueContactIds.length,
+    sent: sentCount,
+    failed: uniqueContactIds.length - sentCount,
+    results,
   };
 }
 
@@ -1036,8 +1473,30 @@ export function updateCampaign(
   const index = store.campaigns.findIndex((item) => item.id === campaignId);
   if (index >= 0) {
     store.campaigns[index] = updated;
+    markRuntimeStoreDirty();
   }
   return updated;
+}
+
+export function deleteCampaign(
+  context: RequestContext,
+  campaignId: string,
+): { readonly deletedCampaignId: string } {
+  findCampaignOrThrow(context, campaignId);
+  const store = getStore();
+  store.campaigns = store.campaigns.filter(
+    (item) =>
+      !(
+        item.id === campaignId &&
+        item.tenantId === context.tenantId &&
+        item.workspaceId === context.workspaceId
+      ),
+  );
+  markRuntimeStoreDirty();
+
+  return {
+    deletedCampaignId: campaignId,
+  };
 }
 
 export function generateCampaignAiDrafts(
@@ -1051,15 +1510,15 @@ export function generateCampaignAiDrafts(
   const drafts: readonly CampaignAiDraft[] = [
     {
       variation: "A",
-      content: `Oi {{first_name}}, campanha: ${goal}. Quer receber horarios para esta semana?`,
+      content: `Hola {{first_name}}, campanha: ${goal}. Quieres recibir horarios para esta semana?`,
     },
     {
       variation: "B",
-      content: `{{first_name}}, temos condicao especial para ${goal}. Posso te enviar os valores agora?`,
+      content: `{{first_name}}, tenemos una condicion especial para ${goal}. Te envio los valores ahora?`,
     },
     {
       variation: "C",
-      content: `Oferta de ${goal} com tom ${tone}. Deseja agendar prioridade?`,
+      content: `Oferta de ${goal} con tono ${tone}. Quieres agendar con prioridad?`,
     },
   ];
 
@@ -1070,6 +1529,7 @@ export function generateCampaignAiDrafts(
       ...campaign,
       aiDrafts: drafts,
     };
+    markRuntimeStoreDirty();
   }
   return drafts;
 }
@@ -1097,6 +1557,7 @@ export function approveCampaign(
   const index = store.campaigns.findIndex((item) => item.id === campaign.id);
   if (index >= 0) {
     store.campaigns[index] = updated;
+    markRuntimeStoreDirty();
   }
 
   return updated;
@@ -1121,9 +1582,10 @@ export async function runCampaign(
 
   let queued = 0;
   for (const phoneNumber of campaign.recipients) {
+    const phoneTail = phoneNumber.replace(/\D/g, "").slice(-4) || "0000";
     const contact = upsertContactByPhone(context, {
       phoneNumber,
-      firstName: "Lead",
+      firstName: `Contato ${phoneTail}`,
       source: "campaign_run",
     });
 
@@ -1145,9 +1607,181 @@ export async function runCampaign(
       ...campaign,
       status: "running",
     };
+    markRuntimeStoreDirty();
   }
 
   return { queued, campaignId };
+}
+
+function findUserForTenantOrThrow(context: RequestContext, userId: string): AuthUser {
+  const store = getStore();
+  const user = store.users.find((item) => item.id === userId && item.tenantId === context.tenantId);
+  if (!user) {
+    throw new Error("Usuario nao encontrado.");
+  }
+  return user;
+}
+
+function assertUniqueUserIdentifier(
+  context: RequestContext,
+  options: { readonly email?: string; readonly phoneNumber?: string; readonly excludeUserId?: string },
+): void {
+  const store = getStore();
+  const email = options.email?.trim();
+  const phoneNumber = options.phoneNumber?.trim();
+  if (!email && !phoneNumber) {
+    return;
+  }
+
+  const duplicated = store.users.find(
+    (item) =>
+      item.tenantId === context.tenantId &&
+      item.id !== options.excludeUserId &&
+      ((email && item.email === email) || (phoneNumber && item.phoneNumber === phoneNumber)),
+  );
+
+  if (duplicated) {
+    throw new Error("Ja existe usuario com mesmo email ou telefone.");
+  }
+}
+
+export function listUsers(context: RequestContext): readonly ManagedUser[] {
+  const store = getStore();
+  return store.users
+    .filter((item) => item.tenantId === context.tenantId)
+    .map(userToManaged)
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function createManagedUser(
+  context: RequestContext,
+  payload: {
+    readonly name: string;
+    readonly email?: string;
+    readonly phoneNumber?: string;
+    readonly password?: string;
+    readonly role?: UserRole;
+    readonly workspaceId?: string;
+    readonly status?: UserStatus;
+  },
+): ManagedUser {
+  const name = payload.name.trim();
+  if (!name) {
+    throw new Error("Nome obrigatorio.");
+  }
+
+  const email = payload.email?.trim();
+  const phoneNumber = payload.phoneNumber?.trim();
+  assertUniqueUserIdentifier(context, {
+    ...(email ? { email } : {}),
+    ...(phoneNumber ? { phoneNumber } : {}),
+  });
+
+  const user: AuthUser = {
+    id: nextId("user", "user"),
+    tenantId: context.tenantId,
+    workspaceId: normalizeWorkspaceId(payload.workspaceId, context.workspaceId),
+    name,
+    role: parseRole(payload.role),
+    status: parseUserStatus(payload.status),
+    password: payload.password?.trim() ? payload.password.trim() : defaultAdminPassword(),
+    ...(email ? { email } : {}),
+    ...(phoneNumber ? { phoneNumber } : {}),
+  };
+
+  const store = getStore();
+  store.users.unshift(user);
+  markRuntimeStoreDirty();
+  return userToManaged(user);
+}
+
+export function updateManagedUser(
+  context: RequestContext,
+  userId: string,
+  payload: {
+    readonly name?: string;
+    readonly email?: string;
+    readonly phoneNumber?: string;
+    readonly password?: string;
+    readonly role?: UserRole;
+    readonly workspaceId?: string;
+    readonly status?: UserStatus;
+  },
+): ManagedUser {
+  const existing = findUserForTenantOrThrow(context, userId);
+  const name = payload.name?.trim();
+  const email = payload.email?.trim();
+  const phoneNumber = payload.phoneNumber?.trim();
+  assertUniqueUserIdentifier(context, {
+    ...(email ? { email } : {}),
+    ...(phoneNumber ? { phoneNumber } : {}),
+    excludeUserId: userId,
+  });
+
+  const updatedMutable: {
+    id: string;
+    tenantId: string;
+    workspaceId: string;
+    name: string;
+    role: UserRole;
+    status?: UserStatus;
+    password: string;
+    email?: string;
+    phoneNumber?: string;
+  } = {
+    ...existing,
+    ...(name ? { name } : {}),
+    ...(payload.role ? { role: parseRole(payload.role) } : {}),
+    ...(payload.workspaceId ? { workspaceId: normalizeWorkspaceId(payload.workspaceId, existing.workspaceId) } : {}),
+    ...(payload.status ? { status: parseUserStatus(payload.status) } : {}),
+    ...(payload.password?.trim() ? { password: payload.password.trim() } : {}),
+  };
+
+  if (payload.email !== undefined) {
+    if (email) {
+      updatedMutable.email = email;
+    } else {
+      delete updatedMutable.email;
+    }
+  }
+  if (payload.phoneNumber !== undefined) {
+    if (phoneNumber) {
+      updatedMutable.phoneNumber = phoneNumber;
+    } else {
+      delete updatedMutable.phoneNumber;
+    }
+  }
+
+  const updated: AuthUser = updatedMutable;
+
+  const store = getStore();
+  const index = store.users.findIndex((item) => item.id === existing.id);
+  if (index >= 0) {
+    store.users[index] = updated;
+  }
+  if ((updated.status ?? "ACTIVE") === "INACTIVE") {
+    store.sessions = store.sessions.filter((item) => item.userId !== updated.id);
+  }
+  markRuntimeStoreDirty();
+
+  return userToManaged(updated);
+}
+
+export function deleteManagedUser(
+  context: RequestContext,
+  userId: string,
+): { readonly deletedUserId: string } {
+  const target = findUserForTenantOrThrow(context, userId);
+  if (target.id === context.actorUserId) {
+    throw new Error("Nao e permitido excluir o usuario logado.");
+  }
+
+  const store = getStore();
+  store.users = store.users.filter((item) => !(item.id === target.id && item.tenantId === context.tenantId));
+  store.sessions = store.sessions.filter((item) => item.userId !== target.id);
+  markRuntimeStoreDirty();
+
+  return { deletedUserId: target.id };
 }
 
 export function registerUser(
@@ -1160,38 +1794,34 @@ export function registerUser(
   },
 ): AuthResponse {
   const store = getStore();
-  const password = payload.password?.trim() ? payload.password : "7741";
-  const name = payload.name.trim();
-  if (!name) {
-    throw new Error("Nome obrigatorio.");
-  }
-
   const email = payload.email?.trim();
   const phoneNumber = payload.phoneNumber?.trim();
-
   const existing = store.users.find(
     (item) =>
       item.tenantId === context.tenantId &&
       item.workspaceId === context.workspaceId &&
+      (item.status ?? "ACTIVE") === "ACTIVE" &&
       ((email && item.email === email) || (phoneNumber && item.phoneNumber === phoneNumber)),
   );
-
   if (existing) {
     return createSessionFromUser(existing);
   }
 
-  const user: AuthUser = {
-    id: nextId("user", "user"),
-    tenantId: context.tenantId,
-    workspaceId: context.workspaceId,
-    name,
-    role: "ADMIN",
-    password,
+  const created = createManagedUser(context, {
+    name: payload.name,
     ...(email ? { email } : {}),
     ...(phoneNumber ? { phoneNumber } : {}),
-  };
-  store.users.unshift(user);
-  return createSessionFromUser(user);
+    ...(payload.password?.trim() ? { password: payload.password.trim() } : {}),
+    role: "ADMIN",
+    workspaceId: context.workspaceId,
+    status: "ACTIVE",
+  });
+
+  const newUser = store.users.find((item) => item.id === created.id);
+  if (!newUser) {
+    throw new Error("Falha ao registrar usuario.");
+  }
+  return createSessionFromUser(newUser);
 }
 
 export function loginUser(
@@ -1210,6 +1840,7 @@ export function loginUser(
     (item) =>
       item.tenantId === context.tenantId &&
       item.workspaceId === context.workspaceId &&
+      (item.status ?? "ACTIVE") === "ACTIVE" &&
       ((email && item.email === email) || (phoneNumber && item.phoneNumber === phoneNumber)),
   );
 
@@ -1233,6 +1864,7 @@ function createSessionFromUser(user: AuthUser): AuthResponse {
 
   const store = getStore();
   store.sessions.unshift(session);
+  markRuntimeStoreDirty();
 
   return {
     accessToken: token,
@@ -1295,33 +1927,150 @@ export type MetaWebhookPayload = {
         readonly messages?: readonly {
           readonly id?: string;
           readonly from?: string;
+          readonly type?: string;
           readonly text?: {
             readonly body?: string;
           };
+          readonly button?: {
+            readonly text?: string;
+          };
+          readonly image?: {
+            readonly caption?: string;
+          };
+          readonly document?: {
+            readonly caption?: string;
+            readonly filename?: string;
+          };
+          readonly interactive?: {
+            readonly button_reply?: {
+              readonly title?: string;
+              readonly id?: string;
+            };
+            readonly list_reply?: {
+              readonly title?: string;
+              readonly id?: string;
+            };
+          };
+        }[];
+        readonly statuses?: readonly {
+          readonly id?: string;
+          readonly status?: string;
         }[];
       };
     }[];
   }[];
 };
 
+type MetaInboundMessage = {
+  readonly id?: string;
+  readonly from?: string;
+  readonly type?: string;
+  readonly text?: {
+    readonly body?: string;
+  };
+  readonly button?: {
+    readonly text?: string;
+  };
+  readonly image?: {
+    readonly caption?: string;
+  };
+  readonly document?: {
+    readonly caption?: string;
+    readonly filename?: string;
+  };
+  readonly interactive?: {
+    readonly button_reply?: {
+      readonly title?: string;
+      readonly id?: string;
+    };
+    readonly list_reply?: {
+      readonly title?: string;
+      readonly id?: string;
+    };
+  };
+};
+
+function extractMetaIncomingText(message: MetaInboundMessage): string {
+  if (message.text?.body?.trim()) {
+    return message.text.body.trim();
+  }
+
+  if (message.button?.text?.trim()) {
+    return message.button.text.trim();
+  }
+
+  if (message.interactive?.button_reply?.title?.trim()) {
+    return message.interactive.button_reply.title.trim();
+  }
+
+  if (message.interactive?.list_reply?.title?.trim()) {
+    return message.interactive.list_reply.title.trim();
+  }
+
+  if (message.image?.caption?.trim()) {
+    return message.image.caption.trim();
+  }
+
+  if (message.document?.caption?.trim()) {
+    return message.document.caption.trim();
+  }
+
+  if (message.document?.filename?.trim()) {
+    return `[documento] ${message.document.filename.trim()}`;
+  }
+
+  if (message.type?.trim()) {
+    return `[${message.type.trim()}]`;
+  }
+
+  return "(sem texto)";
+}
+
+function findMessageByExternalId(context: RequestContext, externalMessageId: string): MessageRecord | undefined {
+  const store = getStore();
+  return store.messages.find(
+    (item) =>
+      item.tenantId === context.tenantId &&
+      item.workspaceId === context.workspaceId &&
+      item.externalMessageId === externalMessageId,
+  );
+}
+
+function mapMetaDeliveryStatus(raw?: string): DeliveryStatus | null {
+  if (raw === "sent") return "sent";
+  if (raw === "delivered") return "delivered";
+  if (raw === "read") return "read";
+  if (raw === "failed") return "failed";
+  return null;
+}
+
 export function processMetaWebhook(
   context: RequestContext,
   payload: MetaWebhookPayload,
   rawBody: string,
   signature?: string | null,
-): { readonly processedMessages: number } {
+): { readonly processedMessages: number; readonly processedStatuses: number } {
   validateMetaSignature(rawBody, signature);
 
   let processedMessages = 0;
+  let processedStatuses = 0;
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {
       const contacts = change.value?.contacts ?? [];
       const messages = change.value?.messages ?? [];
+      const statuses = change.value?.statuses ?? [];
       const firstContact = contacts[0];
       const normalizedName = normalizeProfileName(firstContact?.profile?.name);
       const split = splitName(normalizedName);
 
       for (const message of messages) {
+        if (message.id?.trim()) {
+          const alreadyProcessed = findMessageByExternalId(context, message.id.trim());
+          if (alreadyProcessed) {
+            continue;
+          }
+        }
+
         const sourcePhone = message.from ?? firstContact?.wa_id;
         if (!sourcePhone) {
           continue;
@@ -1346,15 +2095,41 @@ export function processMetaWebhook(
           contactId: contact.id,
           channel: "whatsapp",
           direction: "inbound",
-          text: message.text?.body ?? "",
+          text: extractMetaIncomingText(message),
           status: "received",
           ...(message.id ? { externalMessageId: message.id } : {}),
         });
 
         processedMessages += 1;
       }
+
+      for (const status of statuses) {
+        const externalId = status.id?.trim();
+        const mapped = mapMetaDeliveryStatus(status.status);
+        if (!externalId || !mapped) {
+          continue;
+        }
+
+        const existing = findMessageByExternalId(context, externalId);
+        if (!existing || existing.direction !== "outbound") {
+          continue;
+        }
+
+        const store = getStore();
+        const index = store.messages.findIndex((item) => item.id === existing.id);
+        if (index < 0) {
+          continue;
+        }
+
+        store.messages[index] = {
+          ...existing,
+          status: mapped,
+        };
+        markRuntimeStoreDirty();
+        processedStatuses += 1;
+      }
     }
   }
 
-  return { processedMessages };
+  return { processedMessages, processedStatuses };
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -61,7 +61,7 @@ export default function Home(): JSX.Element {
   const [messages, setMessages] = useState<readonly MessageRecord[]>([]);
   const [campaigns, setCampaigns] = useState<readonly Campaign[]>([]);
   const [contacts, setContacts] = useState<readonly Contact[]>([]);
-  const [status, setStatus] = useState("Carregando dados operacionais...");
+  const [status, setStatus] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
     try {
@@ -125,33 +125,33 @@ export default function Home(): JSX.Element {
         subtitle="Painel central com dados reais de mensagens, campanhas e contatos."
         actions={["Criar lead", "Importacao rapida", "Exportar snapshot", "Agregar cliente"]}
         metrics={[
-          { label: "Mensagens", value: String(messages.length) },
-          { label: "Campanhas", value: String(campaigns.length) },
-          { label: "Contatos", value: String(contacts.length) },
+          { label: "Mensagens", value: String(messages.length), href: "/mensagens?metric=messages_total&groupBy=subject" },
+          { label: "Campanhas", value: String(campaigns.length), href: "/campanhas" },
+          { label: "Contatos", value: String(contacts.length), href: "/clientes" },
         ]}
       />
 
       <section className="card-grid">
-        <article className="kpi-card">
+        <Link href="/mensagens?metric=messages_total&groupBy=subject" className="kpi-card block transition hover:border-accent/40">
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm text-slate-300">Mensagens totais</h3><StatusBadge tone="ok" label="Real" /></div>
           <p className="mt-3 text-3xl font-black">{messages.length}</p>
           <p className="mt-1 text-sm text-slate-400">Fonte: /messages</p>
-        </article>
-        <article className="kpi-card">
+        </Link>
+        <Link href="/mensagens?metric=read_rate&groupBy=direction" className="kpi-card block transition hover:border-accent/40">
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm text-slate-300">Taxa de leitura</h3><StatusBadge tone="ok" label="Real" /></div>
           <p className="mt-3 text-3xl font-black">{readRate}%</p>
           <p className="mt-1 text-sm text-slate-400">Status read / total</p>
-        </article>
-        <article className="kpi-card">
+        </Link>
+        <Link href="/mensagens?metric=delivery_rate&groupBy=status" className="kpi-card block transition hover:border-accent/40">
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm text-slate-300">Taxa de entrega</h3><StatusBadge tone="warn" label="Real" /></div>
           <p className="mt-3 text-3xl font-black">{deliveryRate}%</p>
           <p className="mt-1 text-sm text-slate-400">Delivered + read / total</p>
-        </article>
-        <article className="kpi-card">
+        </Link>
+        <Link href="/mensagens?metric=opt_out&groupBy=work_type" className="kpi-card block transition hover:border-accent/40">
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm text-slate-300">Opt-out</h3><StatusBadge tone="danger" label="Parcial" /></div>
           <p className="mt-3 text-3xl font-black">{optOutRate}%</p>
           <p className="mt-1 text-sm text-slate-400">Ajustar quando dnc global estiver no backend</p>
-        </article>
+        </Link>
       </section>
 
       <section className="grid gap-4 2xl:grid-cols-12">

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { DataOpsPanel } from "../../../components/DataOpsPanel";
@@ -40,7 +40,7 @@ const INITIAL_FORM: FormState = {
 
 export default function AddClientPage(): JSX.Element {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [status, setStatus] = useState("Preencha os dados e clique em salvar.");
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]): void => {
@@ -121,7 +121,7 @@ export default function AddClientPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <PageHeader
-        icon="➕"
+        icon="?"
         title="Agregar Cliente"
         subtitle="Cadastro completo com consentimento e campos funcionais para operacao comercial."
         actions={["Salvar rascunho", "Importar planilha"]}
@@ -136,9 +136,9 @@ export default function AddClientPage(): JSX.Element {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1 text-sm"><span>Nome (pode atualizar depois)</span><input value={form.firstName} onChange={(event) => update("firstName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Sobrenome</span><input value={form.lastName} onChange={(event) => update("lastName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
-          <label className="space-y-1 text-sm"><span>Telefone E.164 (opcional)</span><input value={form.phoneNumber} onChange={(event) => update("phoneNumber", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="+5511999999999" /></label>
-          <label className="space-y-1 text-sm"><span>Identificador de contexto (se sem telefone)</span><input value={form.contextIdentifier} onChange={(event) => update("contextIdentifier", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="ex.: lead_instagram_caixa_12" /></label>
-          <label className="space-y-1 text-sm md:col-span-2"><span>Pergunta/contexto para identificar depois</span><input value={form.contextQuestion} onChange={(event) => update("contextQuestion", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="Ex.: Cliente perguntou sobre sofa 6 lugares no direct" /></label>
+          <label className="space-y-1 text-sm"><span>Telefone E.164 (opcional)</span><input value={form.phoneNumber} onChange={(event) => update("phoneNumber", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="" /></label>
+          <label className="space-y-1 text-sm"><span>Identificador de contexto (se sem telefone)</span><input value={form.contextIdentifier} onChange={(event) => update("contextIdentifier", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="" /></label>
+          <label className="space-y-1 text-sm md:col-span-2"><span>Pergunta/contexto para identificar depois</span><input value={form.contextQuestion} onChange={(event) => update("contextQuestion", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" placeholder="" /></label>
           <label className="space-y-1 text-sm"><span>WhatsApp profile name</span><input value={form.whatsappProfileName} onChange={(event) => update("whatsappProfileName", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Tags (csv)</span><input value={form.tagsCsv} onChange={(event) => update("tagsCsv", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
           <label className="space-y-1 text-sm"><span>Source *</span><input value={form.source} onChange={(event) => update("source", event.target.value)} className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2" /></label>
@@ -162,7 +162,13 @@ export default function AddClientPage(): JSX.Element {
           <button onClick={() => void submit()} disabled={loading} className="rounded-xl border border-accent/50 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent">
             {loading ? "Salvando..." : "Salvar cliente"}
           </button>
-          <button onClick={() => setForm(INITIAL_FORM)} className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold">
+          <button
+            onClick={() => {
+              setForm(INITIAL_FORM);
+              setStatus("Formulario de cliente limpo.");
+            }}
+            className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold"
+          >
             Limpar
           </button>
         </div>
@@ -178,3 +184,4 @@ export default function AddClientPage(): JSX.Element {
     </div>
   );
 }
+
