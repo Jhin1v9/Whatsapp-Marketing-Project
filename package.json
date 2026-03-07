@@ -7,6 +7,10 @@
     "packages/*"
   ],
   "scripts": {
+    "clean:web": "node -e \"try{require('fs').rmSync('apps/web/.next',{recursive:true,force:true});console.log('cleaned apps/web/.next')}catch(e){console.error(e);process.exit(1)}\"",
+    "dev:api": "npm run dev --workspace @app/api",
+    "dev:web": "npm run dev --workspace @app/web",
+    "dev:web:clean": "npm run clean:web && npm run dev:web",
     "typecheck": "npm run --workspaces typecheck",
     "lint": "npm run --workspaces lint",
     "dev": "npm run --workspaces dev",
