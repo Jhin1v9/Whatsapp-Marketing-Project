@@ -1304,6 +1304,24 @@ export async function sendWhatsAppMessage(
   const providerStatus = response.status;
   if (!response.ok) {
     const detail = await response.text();
+    let providerCode = 0;
+    let providerSubcode = 0;
+    let providerMessage = "";
+    try {
+      const parsed = JSON.parse(detail) as {
+        readonly error?: {
+          readonly message?: string;
+          readonly code?: number;
+          readonly error_subcode?: number;
+        };
+      };
+      providerCode = parsed.error?.code ?? 0;
+      providerSubcode = parsed.error?.error_subcode ?? 0;
+      providerMessage = parsed.error?.message?.trim() ?? "";
+    } catch {
+      // keep raw detail fallback
+    }
+
     const failedRecord = createMessage(context, {
       contactId: contact.id,
       channel: "whatsapp",
@@ -1312,6 +1330,23 @@ export async function sendWhatsAppMessage(
       status: "failed",
       ...(imageUrl ? { mediaUrl: imageUrl } : {}),
     });
+
+    if (providerCode === 133010) {
+      const hint =
+        `Meta retornou #133010 Account not registered para o Phone Number ID ${phoneNumberId}. ` +
+        "Verifique se META_PHONE_NUMBER_ID esta ativo/registrado e pertence ao mesmo WABA do META_PERMANENT_TOKEN.";
+      throw new Error(
+        `Envio Meta falhou (${providerStatus}): ${hint}${providerMessage ? ` Detalhe Meta: ${providerMessage}.` : ""} Registro local: ${failedRecord.id}`,
+      );
+    }
+
+    if (providerCode === 190 && providerSubcode === 463) {
+      const hint = "Token Meta expirado (code 190 subcode 463). Gere novo System User token e atualize META_PERMANENT_TOKEN.";
+      throw new Error(
+        `Envio Meta falhou (${providerStatus}): ${hint}${providerMessage ? ` Detalhe Meta: ${providerMessage}.` : ""} Registro local: ${failedRecord.id}`,
+      );
+    }
+
     throw new Error(`Envio Meta falhou (${providerStatus}): ${detail || "sem detalhe"}. Registro local: ${failedRecord.id}`);
   }
 
