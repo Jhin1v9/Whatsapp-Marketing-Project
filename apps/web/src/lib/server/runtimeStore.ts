@@ -1238,6 +1238,8 @@ export async function sendWhatsAppMessage(
 
   const token = readDefault(process.env.META_PERMANENT_TOKEN, "");
   const phoneNumberId = readDefault(process.env.META_PHONE_NUMBER_ID, "");
+  const templateName = readDefault(process.env.META_DEFAULT_TEMPLATE_NAME, "");
+  const templateLanguage = readDefault(process.env.META_DEFAULT_TEMPLATE_LANGUAGE, "en_US");
   if (!token || !phoneNumberId) {
     const allowLocalQueueRaw = readDefault(process.env.ALLOW_LOCAL_QUEUE_WITHOUT_META, "").toLowerCase();
     const requireMetaDelivery = readDefault(process.env.REQUIRE_META_WHATSAPP_DELIVERY, "").toLowerCase() === "true";
@@ -1275,30 +1277,47 @@ export async function sendWhatsAppMessage(
     };
   }
 
+  if (!templateName) {
+    throw new Error("Envio Meta exige META_DEFAULT_TEMPLATE_NAME configurado para uso de template.");
+  }
+
   const response = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
     },
-    body: JSON.stringify(
-      imageUrl
-        ? {
-            messaging_product: "whatsapp",
-            to: contact.phoneNumber.replace(/\D/g, ""),
-            type: "image",
-            image: {
-              link: imageUrl,
-              ...(text ? { caption: text } : {}),
-            },
-          }
-        : {
-            messaging_product: "whatsapp",
-            to: contact.phoneNumber.replace(/\D/g, ""),
-            type: "text",
-            text: { body: text },
-          },
-    ),
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: contact.phoneNumber.replace(/\D/g, ""),
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: templateLanguage },
+        ...(text || imageUrl
+          ? {
+              components: [
+                ...(text
+                  ? [
+                      {
+                        type: "body",
+                        parameters: [{ type: "text", text }],
+                      } as const,
+                    ]
+                  : []),
+                ...(imageUrl
+                  ? [
+                      {
+                        type: "header",
+                        parameters: [{ type: "image", image: { link: imageUrl } }],
+                      } as const,
+                    ]
+                  : []),
+              ],
+            }
+          : {}),
+      },
+    }),
   });
 
   const providerStatus = response.status;
