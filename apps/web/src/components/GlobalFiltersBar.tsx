@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useGlobalFilters } from "../hooks/useGlobalFilters";
 
@@ -22,9 +22,9 @@ export function GlobalFiltersBar(): JSX.Element {
         onChange={(event) => setFilters({ ...filters, timeframe: event.target.value as "7d" | "30d" | "90d" })}
         className="filter-select"
       >
-        <option value="7d">Periodo: 7 dias</option>
-        <option value="30d">Periodo: 30 dias</option>
-        <option value="90d">Periodo: 90 dias</option>
+        <option value="7d">Período: 7 dias</option>
+        <option value="30d">Período: 30 dias</option>
+        <option value="90d">Período: 90 dias</option>
       </select>
 
       <select
@@ -33,7 +33,7 @@ export function GlobalFiltersBar(): JSX.Element {
         className="filter-select"
       >
         <option value="all">Workspace: Todos</option>
-        <option value="operacao">Workspace: Operacao</option>
+        <option value="operacao">Workspace: Operação</option>
         <option value="marketing">Workspace: Marketing</option>
         <option value="comercial">Workspace: Comercial</option>
       </select>

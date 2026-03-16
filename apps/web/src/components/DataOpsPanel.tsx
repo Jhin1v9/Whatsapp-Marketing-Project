@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ReactNode } from "react";
 import { useActionEngine } from "../hooks/useActionEngine";
@@ -17,8 +17,8 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
     <section className="section-card">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-xl font-bold">Importacao e Exportacao</h3>
-          <p className="text-sm text-slate-300">Escopo: {scopeLabel}</p>
+          <h3 className="text-xl font-bold">Importação e Exportação</h3>
+          <p className="text-sm text-slate-300">Escopo de dados: {scopeLabel}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -65,11 +65,11 @@ export function DataOpsPanel({ scopeLabel, importHint, exportHint, children }: D
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-          <p className="font-semibold text-white">Guia de importacao</p>
+          <p className="font-semibold text-white">Guia de importação</p>
           <p className="mt-1">{importHint}</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-          <p className="font-semibold text-white">Guia de exportacao</p>
+          <p className="font-semibold text-white">Guia de exportação</p>
           <p className="mt-1">{exportHint}</p>
         </div>
       </div>

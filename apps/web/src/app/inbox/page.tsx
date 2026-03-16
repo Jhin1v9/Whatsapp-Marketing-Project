@@ -319,7 +319,7 @@ export default function InboxPage(): JSX.Element {
     const aiSuggested = messages.filter((item) => item.direction === "inbound").length;
 
     return [
-      { lane: "Nao lidas", count: unread },
+      { lane: "Não lidas", count: unread },
       { lane: "Aguardando cliente", count: waiting },
       { lane: "Atrasadas", count: delayed },
       { lane: "Com IA sugerida", count: aiSuggested },
@@ -653,7 +653,7 @@ export default function InboxPage(): JSX.Element {
               value={contactQuery}
               onChange={(event) => setContactQuery(event.target.value)}
               className="w-full min-w-60 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
-              placeholder=""
+              placeholder="Buscar por nome, telefone ou origem..."
             />
             <Link href="/clientes" className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold">
               Abrir clientes
@@ -684,7 +684,7 @@ export default function InboxPage(): JSX.Element {
           ))}
           {filteredContacts.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-              Nenhum cliente encontrado. Use os botoes de importacao no final da pagina.
+              Nenhum cliente encontrado. Use os botões de importação no final da página para trazer contatos do seu CRM, planilha ou celular.
             </div>
           ) : null}
         </div>
@@ -739,7 +739,9 @@ export default function InboxPage(): JSX.Element {
                 </div>
               </>
             ) : (
-              <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">Selecione um cliente para abrir as opcoes.</div>
+                <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
+                  Selecione um cliente na lista de importados para habilitar ações como envio de mensagem e criação de propaganda.
+                </div>
             )}
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -785,7 +787,7 @@ export default function InboxPage(): JSX.Element {
                       onChange={(event) => setSelectedQuickReplyId(event.target.value)}
                       className="rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm sm:col-span-2"
                     >
-                      <option value="">Selecione uma pronta...</option>
+                      <option value="">Selecione uma mensagem pronta...</option>
                       {quickReplies.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.text.slice(0, 70)}
@@ -821,7 +823,7 @@ export default function InboxPage(): JSX.Element {
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   className="min-h-28 w-full rounded-xl border border-white/15 bg-black/20 p-3 text-sm"
-                  placeholder=""
+                  placeholder="Digite a mensagem que será enviada para o cliente selecionado..."
                 />
                 <div className="flex gap-2">
                   <button
@@ -849,13 +851,13 @@ export default function InboxPage(): JSX.Element {
                   value={newCampaignName}
                   onChange={(event) => setNewCampaignName(event.target.value)}
                   className="w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
-                  placeholder=""
+                  placeholder="Nome interno da campanha / anúncio..."
                 />
                 <textarea
                   value={newCampaignTemplate}
                   onChange={(event) => setNewCampaignTemplate(event.target.value)}
                   className="min-h-24 w-full rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-sm"
-                  placeholder=""
+                  placeholder="Texto que será enviado para este cliente como propaganda..."
                 />
                 <button
                   type="button"
