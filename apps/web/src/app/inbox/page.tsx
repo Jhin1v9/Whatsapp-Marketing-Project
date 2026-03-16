@@ -331,6 +331,17 @@ export default function InboxPage(): JSX.Element {
     [contacts, selectedContactId],
   );
 
+  const messagesForSelectedContact = useMemo(() => {
+    if (!selectedContactId) {
+      return [] as const;
+    }
+    const related = messages.filter((item) => item.contactId === selectedContactId);
+    const ascending = [...related].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+    return ascending;
+  }, [messages, selectedContactId]);
+
   const latestMessageForSelectedContact = useMemo(() => {
     if (!selectedContactId) return null;
     return messages.find((item) => item.contactId === selectedContactId) ?? null;
@@ -735,7 +746,38 @@ export default function InboxPage(): JSX.Element {
                   Telefone: <span className="font-semibold text-white">{contactPhone(selectedContact.id, contacts)}</span>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-300">
-                  Ultima mensagem: {latestMessageForSelectedContact?.text ?? "(sem conversa ainda - pronto para primeira mensagem)"}
+                  Última mensagem: {latestMessageForSelectedContact?.text ?? "(sem conversa ainda - pronto para primeira mensagem)"}
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/10 p-3 text-xs text-slate-300">
+                  <p className="mb-2 font-semibold text-white">Histórico recente</p>
+                  <div className="flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
+                    {messagesForSelectedContact.length === 0 ? (
+                      <p className="text-slate-400">
+                        Nenhuma conversa registrada ainda com este cliente. Envie a primeira mensagem para iniciar o histórico.
+                      </p>
+                    ) : (
+                      messagesForSelectedContact.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.direction === "outbound" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[80%] rounded-2xl px-3 py-2 ${
+                              message.direction === "outbound"
+                                ? "bg-accent/20 text-accent"
+                                : "bg-white/5 text-slate-100"
+                            }`}
+                          >
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                              {message.direction === "outbound" ? "Você" : "Cliente"} ·{" "}
+                              {new Date(message.timestamp).toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-sm">{message.text || "(sem texto)"}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
