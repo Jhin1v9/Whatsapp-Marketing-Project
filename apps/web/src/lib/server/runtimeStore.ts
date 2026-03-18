@@ -1095,6 +1095,21 @@ export function listMessages(context: RequestContext): readonly MessageRecord[] 
   return store.messages.filter((item) => item.tenantId === context.tenantId && item.workspaceId === context.workspaceId);
 }
 
+export function deleteAllMessages(
+  context: RequestContext,
+): { readonly deletedMessages: number } {
+  const store = getStore();
+  const before = store.messages.length;
+  store.messages = store.messages.filter(
+    (item) => !(item.tenantId === context.tenantId && item.workspaceId === context.workspaceId),
+  );
+  const deletedMessages = before - store.messages.length;
+  if (deletedMessages > 0) {
+    markRuntimeStoreDirty();
+  }
+  return { deletedMessages };
+}
+
 export function deleteMessage(
   context: RequestContext,
   messageId: string,
@@ -1240,6 +1255,16 @@ export async function sendWhatsAppMessage(
   const phoneNumberId = readDefault(process.env.META_PHONE_NUMBER_ID, "");
   const templateName = readDefault(process.env.META_DEFAULT_TEMPLATE_NAME, "");
   const templateLanguage = readDefault(process.env.META_DEFAULT_TEMPLATE_LANGUAGE, "en_US");
+  // Log minimo para diagnostico de configuracao Meta (sem expor segredos).
+  console.log("[runtimeStore.sendWhatsAppMessage] Meta config snapshot", {
+    hasToken: Boolean(token),
+    hasPhoneNumberId: Boolean(phoneNumberId),
+    templateName,
+    templateLanguage,
+    contactId: contact.id,
+    tenantId: context.tenantId,
+    workspaceId: context.workspaceId,
+  });
   if (!token || !phoneNumberId) {
     const allowLocalQueueRaw = readDefault(process.env.ALLOW_LOCAL_QUEUE_WITHOUT_META, "").toLowerCase();
     const requireMetaDelivery = readDefault(process.env.REQUIRE_META_WHATSAPP_DELIVERY, "").toLowerCase() === "true";
@@ -1321,6 +1346,12 @@ export async function sendWhatsAppMessage(
   });
 
   const providerStatus = response.status;
+  console.log("[runtimeStore.sendWhatsAppMessage] Meta HTTP response", {
+    contactId: contact.id,
+    tenantId: context.tenantId,
+    workspaceId: context.workspaceId,
+    httpStatus: providerStatus,
+  });
   if (!response.ok) {
     const detail = await response.text();
     let providerCode = 0;
@@ -1340,6 +1371,16 @@ export async function sendWhatsAppMessage(
     } catch {
       // keep raw detail fallback
     }
+
+    console.log("[runtimeStore.sendWhatsAppMessage] Meta error payload", {
+      contactId: contact.id,
+      tenantId: context.tenantId,
+      workspaceId: context.workspaceId,
+      httpStatus: providerStatus,
+      providerCode,
+      providerSubcode,
+      providerMessage,
+    });
 
     const failedRecord = createMessage(context, {
       contactId: contact.id,
@@ -1374,6 +1415,14 @@ export async function sendWhatsAppMessage(
   };
 
   const providerMessageId = raw.messages?.[0]?.id;
+  console.log("[runtimeStore.sendWhatsAppMessage] Meta success payload", {
+    contactId: contact.id,
+    tenantId: context.tenantId,
+    workspaceId: context.workspaceId,
+    httpStatus: providerStatus,
+    hasMessagesArray: Array.isArray(raw.messages) && raw.messages.length > 0,
+    providerMessageIdPrefix: providerMessageId ? providerMessageId.slice(0, 12) : null,
+  });
   const message = createMessage(context, {
     contactId: contact.id,
     channel: "whatsapp",
