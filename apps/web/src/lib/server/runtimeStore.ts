@@ -2271,6 +2271,13 @@ export function processMetaWebhook(
         };
         markRuntimeStoreDirty();
         processedStatuses += 1;
+
+        console.log("[runtimeStore.processMetaWebhook] status updated", {
+          tenantId: context.tenantId,
+          workspaceId: context.workspaceId,
+          externalIdPrefix: externalId.slice(0, 12),
+          mappedStatus: mapped,
+        });
       }
     }
   }
